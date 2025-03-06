@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "521145217896",
+    "project_id": "fir-e8ea9",
+    "storage_bucket": "fir-e8ea9.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:521145217896:android:8e60746bc9e029f689dcdd",
+        "android_client_info": {
+          "package_name": "com.atc.pinghr"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "521145217896-ab78pfdtiele6ls0aus11c7r7ciieqbc.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyABdziQUhqFRu38UIXjxlH9WlAtObtMaFI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "521145217896-ab78pfdtiele6ls0aus11c7r7ciieqbc.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
