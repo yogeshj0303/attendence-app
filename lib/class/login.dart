@@ -33,6 +33,15 @@ class Login {
         // GlobalVariable.currentAdd = data['data']['corres_add'];
         // GlobalVariable.emergencynumber = data['data']['parent_mobile'];
         // GlobalVariable.blood = data['data']['blood_group'];
+        print(GlobalVariable.empID);
+        print(GlobalVariable.name);
+        print(GlobalVariable.designation);
+        print(GlobalVariable.number);
+        print(GlobalVariable.email);
+        print(GlobalVariable.image);
+        print(GlobalVariable.department);
+        print(GlobalVariable.joiningDate);
+        print(GlobalVariable.salary);
         Fluttertoast.showToast(msg: 'Login Successful')
             .then((value) => Get.offAll(() => const MainScreen()));
       } else {

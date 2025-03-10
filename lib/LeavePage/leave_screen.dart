@@ -1,7 +1,9 @@
 import 'package:employeeattendance/DrawerPage/leaveapplication.dart';
 import 'package:employeeattendance/api_services.dart';
+import 'package:employeeattendance/controller/globalvariable.dart';
 import 'package:flutter/material.dart';
 import 'package:employeeattendance/LeavePage/leave_history_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:employeeattendance/models/holiday.dart';
 import 'dart:convert';
@@ -17,10 +19,18 @@ class _AutoLeaveScreenState extends State<AutoLeaveScreen> {
   Map<DateTime, List<String>> _holidays = {};
   final ApiService _holidayService = ApiService();
   List<Map<String, dynamic>> _leaveData = [];
+  String _employeeId = '';
 
   @override
   void initState() {
     super.initState();
+    _loadEmployeeId();
+  }
+
+  Future<void> _loadEmployeeId() async {
+    setState(() {
+      _employeeId = GlobalVariable.empID; // Default to 'ACT2038' if not found
+    });
     _fetchHolidays();
     _fetchLeaveData();
   }
@@ -41,7 +51,7 @@ class _AutoLeaveScreenState extends State<AutoLeaveScreen> {
 
   Future<void> _fetchLeaveData() async {
     try {
-      List<Map<String, dynamic>> leaveData = await _holidayService.fetchLeaveData('ACT2038');
+      List<Map<String, dynamic>> leaveData = await _holidayService.fetchLeaveData(_employeeId);
       setState(() {
         _leaveData = leaveData;
       });

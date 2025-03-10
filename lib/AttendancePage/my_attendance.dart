@@ -1,3 +1,4 @@
+import 'package:employeeattendance/controller/globalvariable.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'dart:convert';
@@ -12,28 +13,29 @@ class MyAttendancePage extends StatefulWidget {
 class _MyAttendancePageState extends State<MyAttendancePage> {
   DateTime _currentMonth = DateTime.now();
   List<dynamic> _attendanceData = [];
-  String? _empId;
+  String? _Id;
   DateTime? _selectedDate;
 
   @override
   void initState() {
     super.initState();
-    _loadEmpId();
+    _loadId();
   }
 
-  Future<void> _loadEmpId() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
+  Future<void> _loadId() async {
     setState(() {
-      _empId = prefs.getString('emp_id') ?? '113'; // Default to '113' if not found
+      _Id = GlobalVariable.uid.toString(); // Default to '113' if not found
+      print(_Id);
     });
     _fetchAttendanceData();
   }
 
   Future<void> _fetchAttendanceData() async {
-    if (_empId == null) return;
+    if (_Id == null) return;
 
-    final response = await http.post(Uri.parse('https://pinghr.in/api/attendance?id=$_empId'));
+    final response = await http.post(Uri.parse('https://pinghr.in/api/attendance?id=$_Id'));
 
+print(response.body);
     if (response.statusCode == 200 || response.statusCode == 201) {
       final data = jsonDecode(response.body);
       if (data['status'] == true) {

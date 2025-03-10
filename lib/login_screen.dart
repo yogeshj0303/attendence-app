@@ -45,7 +45,14 @@ class _LoginScreenState extends State<LoginScreen> {
         GlobalVariable.joiningDate = data['data']['date_of_join'];
         GlobalVariable.salary = data['data']['salary'];
 
-
+        print(GlobalVariable.empID);
+        print(GlobalVariable.name);
+        print(GlobalVariable.designation);
+        print(GlobalVariable.number);
+        print(GlobalVariable.email);
+        print(GlobalVariable.image);
+        print(GlobalVariable.department);
+        
         AuthLogin.login(empId, password);
         Fluttertoast.showToast(msg: 'Login Successful')
             .then((value) => Get.offAll(() => const MainScreen()));
