@@ -1,11 +1,10 @@
-import 'package:employeeattendance/DrawerPage/leaveapplication.dart';
+import 'package:employeeattendance/AttendancePage/my_attendance.dart';
 import 'package:employeeattendance/DrawerPage/profile_screen.dart';
-import 'package:employeeattendance/DrawerPage/view_attendance.dart';
 import 'package:employeeattendance/LeavePage/leave_screen.dart';
+import 'package:employeeattendance/PayrollPage/payroll_screen.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'home_screen.dart';
-import 'notification_screen.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -20,7 +19,7 @@ class _MainScreenState extends State<MainScreen> {
   // List of widgets for each tab page (excluding the placeholder)
   final List<Widget> _pages = [
     const HomeScreen(),
-    ViewAttendance(),
+    MyAttendancePage(),
     const SizedBox.shrink(),
     AutoLeaveScreen(),
     const ProfileScreen(),
@@ -28,9 +27,6 @@ class _MainScreenState extends State<MainScreen> {
 
   // Method to handle bottom navigation item selection
   void _onItemTapped(int index) {
-    if (index == 2) {
-      HomeScreen();
-    }
     setState(() {
       _currentIndex = index;
     });
@@ -90,15 +86,17 @@ class _MainScreenState extends State<MainScreen> {
         ),
         // Floating Action Button (Add button in the middle)
         Positioned(
-          bottom: 20, // Adjusted position for better alignment
-          left: MediaQuery.of(context).size.width / 2 - 30, // Center the button
+          bottom: 12, // Align the FAB with the bottom of the navigation bar
+          left: (MediaQuery.of(context).size.width - 56) / 2, // Center the button based on its size
           child: AnimatedScale(
             scale: _currentIndex == 2 ? 1.2 : 1.0, // More pronounced scale effect when FAB is selected
             duration: const Duration(milliseconds: 300), // Slightly longer animation duration
             child: FloatingActionButton(
               onPressed: () {
-                // Navigator.push(context, MaterialPageRoute(builder: (context) => LeaveApplication()));
-                Navigator.push(context, MaterialPageRoute(builder: (context) => AutoLeaveScreen()));
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => PayrollScreen()),
+                );
                 print("Add button pressed");
               },
               shape: RoundedRectangleBorder(

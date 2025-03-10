@@ -1,5 +1,11 @@
 import 'package:employeeattendance/DrawerPage/leaveapplication.dart';
+import 'package:employeeattendance/api_services.dart';
 import 'package:flutter/material.dart';
+import 'package:employeeattendance/LeavePage/leave_history_screen.dart';
+import 'package:table_calendar/table_calendar.dart';
+import 'package:employeeattendance/models/holiday.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 
 class AutoLeaveScreen extends StatefulWidget {
   @override
@@ -7,6 +13,43 @@ class AutoLeaveScreen extends StatefulWidget {
 }
 
 class _AutoLeaveScreenState extends State<AutoLeaveScreen> {
+  List<bool> _isSelected = [true, false];
+  Map<DateTime, List<String>> _holidays = {};
+  final ApiService _holidayService = ApiService();
+  List<Map<String, dynamic>> _leaveData = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchHolidays();
+    _fetchLeaveData();
+  }
+
+  Future<void> _fetchHolidays() async {
+    try {
+      List<Holiday> holidays = await _holidayService.fetchHolidays();
+      setState(() {
+        _holidays = {
+          for (var holiday in holidays) holiday.date: [holiday.name]
+        };
+      });
+    } catch (e) {
+      // Handle error
+      print('Error fetching holidays: $e');
+    }
+  }
+
+  Future<void> _fetchLeaveData() async {
+    try {
+      List<Map<String, dynamic>> leaveData = await _holidayService.fetchLeaveData('ACT2038');
+      setState(() {
+        _leaveData = leaveData;
+      });
+    } catch (e) {
+      print('Error fetching leave data: $e');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -31,8 +74,8 @@ class _AutoLeaveScreenState extends State<AutoLeaveScreen> {
             SizedBox(height: 8),
             ToggleButtons(
               borderRadius: BorderRadius.circular(8),
-              fillColor: Theme.of(context).primaryColor.withOpacity(0.1),
-              selectedColor: Theme.of(context).primaryColor,
+              fillColor: Colors.blue.shade900.withOpacity(0.1),
+              selectedColor: Colors.blue.shade900,
               children: <Widget>[
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -43,55 +86,56 @@ class _AutoLeaveScreenState extends State<AutoLeaveScreen> {
                   child: Text('Holiday Calendar'),
                 ),
               ],
-              isSelected: [true, false],
+              isSelected: _isSelected,
               onPressed: (int index) {
-                // Handle toggle button selection
+                setState(() {
+                  for (int i = 0; i < _isSelected.length; i++) {
+                    _isSelected[i] = i == index;
+                  }
+                });
               },
             ),
             SizedBox(height: 16),
             Expanded(
-              child: ListView(
-                clipBehavior: Clip.none,
-                children: [
-                  SingleChildScrollView(
-                    clipBehavior: Clip.none,
-                    scrollDirection: Axis.horizontal,
-                    child: _buildLeaveTable(),
-                  ),
-                ],
-              ),
+              child: _isSelected[0]
+                  ? SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: _buildLeaveDataTable(),
+                    )
+                  : _buildHolidayCalendar(),
             ),
-            SingleChildScrollView(
-              clipBehavior: Clip.none,
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  ElevatedButton.icon(
-                    onPressed: () {
-                      // Handle leave history
-                    },
-                    icon: Icon(Icons.history, color: Colors.white),
-                    label: Text('Leave History', style: TextStyle(color: Colors.white)),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue.shade900,
-                      padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                    ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                ElevatedButton.icon(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => LeaveHistoryScreen()),
+                    );
+                  },
+                  icon: Icon(Icons.history, color: Colors.white),
+                  label: Text('Leave History', style: TextStyle(color: Colors.white)),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blue.shade900,
+                    padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                   ),
-                  SizedBox(width: 8), // Add spacing between buttons
-                  ElevatedButton.icon(
-                    onPressed: () {
-                      Navigator.push(context, MaterialPageRoute(builder: (context) => LeaveApplication()));
-                    },
-                    icon: Icon(Icons.add, color: Colors.white),
-                    label: Text('Apply Leave', style: TextStyle(color: Colors.white)),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue.shade900,
-                      padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                    ),
+                ),
+                SizedBox(width: 8), // Add spacing between buttons
+                ElevatedButton.icon(
+                  onPressed: () {
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => LeaveApplication()));
+                  },
+                  icon: Icon(Icons.add, color: Colors.white),
+                  label: Text('Apply Leave', style: TextStyle(color: Colors.white)),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blue.shade900,
+                    padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ],
         ),
@@ -99,62 +143,127 @@ class _AutoLeaveScreenState extends State<AutoLeaveScreen> {
     );
   }
 
-  Widget _buildLeaveTable() {
+  Widget _buildLeaveDataTable() {
     return DataTable(
       columnSpacing: 16.0,
-      headingRowColor: MaterialStateColor.resolveWith((states) => Theme.of(context).primaryColor.withOpacity(0.1)),
-      dataRowColor: MaterialStateColor.resolveWith((states) {
-        if (states.contains(MaterialState.selected)) {
-          return Theme.of(context).primaryColor.withOpacity(0.15);
-        }
-        return Colors.transparent;
-      }),
+      headingRowColor: MaterialStateColor.resolveWith((states) => Colors.blue.shade900.withOpacity(0.1)),
       columns: [
         DataColumn(
           label: Text(
             'Leave Type',
-            style: TextStyle(fontWeight: FontWeight.bold, color: Theme.of(context).primaryColor),
+            style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black54, fontSize: 12),
           ),
         ),
         DataColumn(
           label: Text(
-            'Balance',
-            style: TextStyle(fontWeight: FontWeight.bold, color: Theme.of(context).primaryColor),
+            'Reason',
+            style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black54, fontSize: 12),
+          ),
+        ),
+        DataColumn(
+          label: Text(
+            'Start Date',
+            style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black54, fontSize: 12),
+          ),
+        ),
+        DataColumn(
+          label: Text(
+            'End Date',
+            style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black54, fontSize: 12),
+          ),
+        ),
+        DataColumn(
+          label: Text(
+            'Leave Count',
+            style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black54, fontSize: 12),
           ),
           numeric: true,
         ),
         DataColumn(
           label: Text(
-            'Utilized',
-            style: TextStyle(fontWeight: FontWeight.bold, color: Theme.of(context).primaryColor),
+            'Approved Date',
+            style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black54, fontSize: 12),
           ),
-          numeric: true,
-        ),
-        DataColumn(
-          label: Text(
-            'Pending',
-            style: TextStyle(fontWeight: FontWeight.bold, color: Theme.of(context).primaryColor),
-          ),
-          numeric: true,
         ),
       ],
-      rows: [
-        _buildDataRow('Vacation Leave (VL)', '24', '0', '0'),
-        _buildDataRow('Sick Leave (SL)', '24', '0', '0'),
-        _buildDataRow('PL (PL)', '10', '2', '0'),
-        _buildDataRow('WFH (WFH)', '1', '0', '0'),
-      ],
+      rows: _leaveData.map((leave) {
+        final startDate = parseCustomDate(leave['start_date']);
+        final endDate = parseCustomDate(leave['end_date']);
+        final leaveCount = endDate.difference(startDate).inDays + 1;
+        final status = leave['status'] == '2' ? 'Rejected' : 'Approved on ${leave['approved_date'] ?? 'N/A'}';
+
+        return DataRow(
+          cells: [
+            DataCell(Text(leave['type'], style: TextStyle(fontSize: 12))),
+            DataCell(Text(leave['region'], style: TextStyle(fontSize: 12))),
+            DataCell(Center(child: Text(leave['start_date'], style: TextStyle(fontSize: 12)))),
+            DataCell(Center(child: Text(leave['end_date'], style: TextStyle(fontSize: 12)))),
+            DataCell(Center(child: Text('$leaveCount', style: TextStyle(fontSize: 12)))),
+            DataCell(Center(child: Text(status, style: TextStyle(fontSize: 12)))),
+          ],
+        );
+      }).toList(),
     );
   }
 
-  DataRow _buildDataRow(String type, String balance, String utilized, String pending) {
-    return DataRow(
-      cells: [
-        DataCell(Text(type, style: TextStyle(fontSize: 14))),
-        DataCell(Center(child: Text(balance, style: TextStyle(fontSize: 14)))),
-        DataCell(Center(child: Text(utilized, style: TextStyle(fontSize: 14)))),
-        DataCell(Center(child: Text(pending, style: TextStyle(fontSize: 14)))),
-      ],
+  Widget _buildHolidayCalendar() {
+    DateTime now = DateTime.now();
+    DateTime firstDay = DateTime.utc(2025, 1, 1);
+    DateTime lastDay = DateTime.utc(2025, 12, 31);
+    DateTime focusedDay = now.isBefore(firstDay) ? firstDay : (now.isAfter(lastDay) ? lastDay : now);
+
+    return TableCalendar(
+      firstDay: firstDay,
+      lastDay: lastDay,
+      focusedDay: focusedDay,
+      calendarFormat: CalendarFormat.month,
+      eventLoader: (day) {
+        return _holidays[day] ?? [];
+      },
+      calendarStyle: CalendarStyle(
+        todayDecoration: BoxDecoration(
+          color: Colors.blue.shade200,
+          shape: BoxShape.circle,
+        ),
+        selectedDecoration: BoxDecoration(
+          color: Colors.blue.shade900,
+          shape: BoxShape.circle,
+        ),
+        markerDecoration: BoxDecoration(
+          color: Colors.green,
+          shape: BoxShape.circle,
+        ),
+      ),
+      headerStyle: HeaderStyle(
+        formatButtonVisible: false,
+        titleCentered: true,
+      ),
     );
+  }
+
+  DateTime parseCustomDate(String dateString) {
+    final parts = dateString.split('-');
+    final day = int.parse(parts[0]);
+    final month = _monthStringToNumber(parts[1]);
+    final year = int.parse(parts[2]);
+    return DateTime(year, month, day);
+  }
+
+  int _monthStringToNumber(String month) {
+    switch (month.toLowerCase()) {
+      case 'jan': return 1;
+      case 'feb': return 2;
+      case 'mar': return 3;
+      case 'apr': return 4;
+      case 'may': return 5;
+      case 'jun': return 6;
+      case 'jul': return 7;
+      case 'aug': return 8;
+      case 'sep': return 9;
+      case 'oct': return 10;
+      case 'nov': return 11;
+      case 'dec': return 12;
+      default: throw FormatException('Invalid month format');
+    }
   }
 } 

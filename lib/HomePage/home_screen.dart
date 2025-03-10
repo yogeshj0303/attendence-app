@@ -744,7 +744,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget buildNews() {
     final url = '${apiUrl}newsevent';
-
+    print(url);
     Future<EventsData> getEventsData() async {
       var response = await http.post(Uri.parse(url));
       var data = jsonDecode(response.body.toString());
