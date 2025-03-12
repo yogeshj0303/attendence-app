@@ -18,7 +18,7 @@ class _MainScreenState extends State<MainScreen> {
 
   // List of widgets for each tab page (excluding the placeholder)
   final List<Widget> _pages = [
-    const HomeScreen(),
+    const PayrollScreen(),
     MyAttendancePage(),
     const SizedBox.shrink(),
     AutoLeaveScreen(),
@@ -62,8 +62,8 @@ class _MainScreenState extends State<MainScreen> {
           backgroundColor: Colors.white, // White background for a cleaner look
           items: <BottomNavigationBarItem>[
             BottomNavigationBarItem(
-              icon: Icon(CupertinoIcons.home, size: 24), // Slightly larger icons
-              label: 'Home',
+              icon: Icon(CupertinoIcons.money_dollar, size: 24), // Slightly larger icons
+              label: 'Payroll',
             ),
             BottomNavigationBarItem(
               icon: Icon(CupertinoIcons.calendar, size: 24),
@@ -95,7 +95,7 @@ class _MainScreenState extends State<MainScreen> {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => PayrollScreen()),
+                  MaterialPageRoute(builder: (context) => HomeScreen()),
                 );
                 print("Add button pressed");
               },

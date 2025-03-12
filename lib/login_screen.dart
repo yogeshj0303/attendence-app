@@ -253,11 +253,9 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ],
                     ),
-                    subtitle: const Flexible(
-                      child: Text(
-                        'PingHR collects location data to enable check-in and check-out functionality even when the app is closed or not in use.',
-                        style: TextStyle(fontSize: 12),
-                      ),
+                    subtitle: const Text(
+                      'PingHR collects location data to enable check-in and check-out functionality even when the app is closed or not in use.',
+                      style: TextStyle(fontSize: 12),
                     ),
                     onChanged: (value) => setState(() => isAccepted = value!),
                   ),

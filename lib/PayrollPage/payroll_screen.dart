@@ -13,12 +13,10 @@ class PayrollScreen extends StatelessWidget {
           backgroundColor: Colors.white,
           elevation: 0,
           centerTitle: true,
-          leading: IconButton(
-            icon: Icon(Icons.arrow_back),
-            onPressed: () => Navigator.of(context).pop(),
-          ),
-          title: Text('Payroll', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black54)),
+          title: Text('Payroll', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black54)),
           bottom: TabBar(
+            dividerHeight: 0,
+            overlayColor: MaterialStateProperty.all(Colors.transparent),
             tabs: [
               Tab(text: 'Payroll Structure'),
               Tab(text: 'Download Payslip'),
@@ -30,8 +28,8 @@ class PayrollScreen extends StatelessWidget {
             indicatorSize: TabBarIndicatorSize.tab,
             labelColor: Colors.white,
             unselectedLabelColor: Colors.black,
-            labelPadding: EdgeInsets.symmetric(horizontal: 20.0),
-            indicatorPadding: EdgeInsets.all(5.0),
+            labelPadding: EdgeInsets.symmetric(horizontal: 15.0),
+            indicatorPadding: EdgeInsets.all(3.0),
           ),
         ),
         body: TabBarView(
@@ -47,7 +45,7 @@ class PayrollScreen extends StatelessWidget {
   Widget _buildPayrollStructure() {
     return SingleChildScrollView(
       child: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(12.0),
         child: Column(
           children: [
             Card(
@@ -56,11 +54,11 @@ class PayrollScreen extends StatelessWidget {
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Padding(
-                padding: const EdgeInsets.all(16.0),
+                padding: const EdgeInsets.all(12.0),
                 child: Column(
                   children: [
-                    Text('Net Salary(KYD)', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
-                    SizedBox(height: 10),
+                    Text('Net Salary(KYD)', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white)),
+                    SizedBox(height: 8),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -73,7 +71,7 @@ class PayrollScreen extends StatelessWidget {
                 ),
               ),
             ),
-            SizedBox(height: 20),
+            SizedBox(height: 15),
             _buildSection('Earning', [
               _buildRow('Basic', '3000'),
               _buildRow('Total', '3000'),
@@ -110,8 +108,8 @@ class PayrollScreen extends StatelessWidget {
         },
         child: Text('Download Payslip'),
         style: ElevatedButton.styleFrom(
-          padding: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
-          textStyle: TextStyle(fontSize: 16),
+          padding: EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+          textStyle: TextStyle(fontSize: 14),
         ),
       ),
     );
@@ -119,11 +117,11 @@ class PayrollScreen extends StatelessWidget {
 
   Widget _buildSection(String title, List<Widget> rows) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      padding: const EdgeInsets.symmetric(vertical: 6.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(title, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+          Text(title, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
           ...rows,
         ],
       ),
@@ -132,12 +130,12 @@ class PayrollScreen extends StatelessWidget {
 
   Widget _buildRow(String label, String amount) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4.0),
+      padding: const EdgeInsets.symmetric(vertical: 3.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: TextStyle(fontSize: 16)),
-          Text(amount, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+          Text(label, style: TextStyle(fontSize: 14)),
+          Text(amount, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
         ],
       ),
     );
@@ -147,8 +145,8 @@ class PayrollScreen extends StatelessWidget {
     return Flexible(
       child: Column(
         children: [
-          Text(label, style: TextStyle(color: color, fontSize: 10)),
-          Text(amount, style: TextStyle(color: color, fontWeight: FontWeight.bold, fontSize: 18)),
+          Text(label, style: TextStyle(color: color, fontSize: 9)),
+          Text(amount, style: TextStyle(color: color, fontWeight: FontWeight.bold, fontSize: 16)),
         ],
       ),
     );

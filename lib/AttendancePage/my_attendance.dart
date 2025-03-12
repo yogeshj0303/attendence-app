@@ -19,6 +19,7 @@ class _MyAttendancePageState extends State<MyAttendancePage> {
   @override
   void initState() {
     super.initState();
+    _selectedDate = DateTime.now();
     _loadId();
   }
 
@@ -35,12 +36,13 @@ class _MyAttendancePageState extends State<MyAttendancePage> {
 
     final response = await http.post(Uri.parse('https://pinghr.in/api/attendance?id=$_Id'));
 
-print(response.body);
+    print(response.body);
     if (response.statusCode == 200 || response.statusCode == 201) {
       final data = jsonDecode(response.body);
       if (data['status'] == true) {
         setState(() {
           _attendanceData = data['data'];
+          _selectedDate = DateTime.now();
         });
       }
     } else {
@@ -200,6 +202,7 @@ print(response.body);
             _buildDetailRow('In Time', attendance['checkin']),
             _buildDetailRow('Out Date', attendance['date']),
             _buildDetailRow('Out Time', attendance['checkout'] ?? '--:--'),
+            _buildDetailRow('Status', attendance['work_status'] ?? 'Unknown'),
           ],
         ),
       ),
@@ -207,13 +210,25 @@ print(response.body);
   }
 
   Widget _buildDetailRow(String label, String value) {
+    Color textColor = Colors.black54; // Default color
+
+    if (label == 'Status') {
+      if (value.toLowerCase() == 'present') {
+        textColor = Colors.green;
+      } else if (value.toLowerCase() == 'absent') {
+        textColor = Colors.red;
+      } else if (value.toLowerCase() == 'half day') {
+        textColor = Colors.orange;
+      }
+    }
+
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(label, style: TextStyle(fontSize: 14, color: Colors.black54)),
-          Text(value, style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+          Text(value, style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: textColor)),
         ],
       ),
     );

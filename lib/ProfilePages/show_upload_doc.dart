@@ -19,37 +19,46 @@ class ShowUploadDoc extends StatefulWidget {
 
 class _ShowUploadDocState extends State<ShowUploadDoc> {
   RxBool isLoading = false.obs;
+
   Future<ShowDocModel> getUploadedDoc() async {
     final url = '${apiUrl}emp-document?emp_id=${GlobalVariable.empID}';
-    final response = await http.post(Uri.parse(url));
-    if (response.statusCode == 200) {
-      final data = jsonDecode(response.body);
-      if (data['error'] == false) {
-        return ShowDocModel.fromJson(data);
+    try {
+      final response = await http.post(Uri.parse(url));
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['error'] == false) {
+          return ShowDocModel.fromJson(data);
+        } else {
+          Fluttertoast.showToast(msg: 'Error: Unable to fetch documents.');
+        }
       } else {
-        Fluttertoast.showToast(msg: 'error true');
+        Fluttertoast.showToast(msg: 'Server error: ${response.statusCode}');
       }
-    } else {
-      Fluttertoast.showToast(msg: 'Server error');
+    } catch (e) {
+      Fluttertoast.showToast(msg: 'An error occurred: $e');
     }
-    throw Exception('Unable to load');
+    throw Exception('Unable to load documents');
   }
 
   Future<String> downloadDoc(String url, String fileName) async {
     isLoading.value = true;
-    final response = await http.get(Uri.parse(url));
-    if (response.statusCode == 200) {
-      final directory = await getTemporaryDirectory();
-      final path = '${directory.path}/$fileName';
-      final file = await File(path).create();
-      file.writeAsBytes(response.bodyBytes);
-      OpenFile.open(path);
+    try {
+      final response = await http.get(Uri.parse(url));
+      if (response.statusCode == 200) {
+        final directory = await getTemporaryDirectory();
+        final path = '${directory.path}/$fileName';
+        final file = await File(path).create();
+        await file.writeAsBytes(response.bodyBytes);
+        OpenFile.open(path);
+        return path;
+      } else {
+        throw Exception('Failed to download document. Status code: ${response.statusCode}');
+      }
+    } catch (e) {
+      Fluttertoast.showToast(msg: 'Download error: $e');
+      rethrow;
+    } finally {
       isLoading.value = false;
-      return 'file.path';
-    } else {
-      isLoading.value = false;
-      throw Exception(
-          'Failed to download image. Status code: ${response.statusCode}');
     }
   }
 
@@ -57,71 +66,85 @@ class _ShowUploadDocState extends State<ShowUploadDoc> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Uploaded Documents'),
-        elevation: 1,
+        title: const Text('Uploaded Documents', style: TextStyle(color: Colors.black54, fontSize: 18, fontWeight: FontWeight.bold),),
+        elevation: 0,
+        centerTitle: true,
       ),
       body: Obx(
         () => isLoading.value
             ? const Center(child: CircularProgressIndicator())
             : FutureBuilder<ShowDocModel>(
                 future: getUploadedDoc(),
-                builder: (context, snapshot) => snapshot.hasData
-                    ? snapshot.data!.data!.isEmpty
-                        ? emptyData()
-                        : ListView.builder(
-                            shrinkWrap: true,
-                            itemCount: snapshot.data!.data!.length,
-                            itemBuilder: (context, index) =>
-                                buildDownloadCard(snapshot, index))
-                    : const Center(child: CircularProgressIndicator()),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
+                  } else if (snapshot.hasError) {
+                    return Center(child: Text('Error: ${snapshot.error}'));
+                  } else if (!snapshot.hasData || snapshot.data!.data!.isEmpty) {
+                    return emptyData();
+                  } else {
+                    return ListView.builder(
+                      shrinkWrap: true,
+                      itemCount: snapshot.data!.data!.length,
+                      itemBuilder: (context, index) => buildDownloadCard(snapshot, index),
+                    );
+                  }
+                },
               ),
       ),
     );
   }
 
-  buildDownloadCard(AsyncSnapshot<ShowDocModel> snapshot, int index) {
+  Widget buildDownloadCard(AsyncSnapshot<ShowDocModel> snapshot, int index) {
     final item = snapshot.data!.data![index];
     return GestureDetector(
       onTap: () => downloadDoc('$imgPath/${item.storePath}', item.storePath!),
-      child: Container(
-        padding: const EdgeInsets.all(12),
-        margin: const EdgeInsets.only(top: 12, left: 12, right: 12),
+      child: Card(
         color: Colors.white,
-        child: Column(
-          children: [
-            Row(
-              children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      item.documentName!.toUpperCase(),
-                      style: const TextStyle(fontSize: 16),
-                    ),
-                    Text(item.storePath!),
-                  ],
-                ),
-                const Spacer(),
-                const Text(
+        margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+        elevation: 2,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                item.documentName!.toUpperCase(),
+                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                item.storePath!,
+                style: const TextStyle(color: Colors.grey),
+              ),
+              const SizedBox(height: 8),
+              Align(
+                alignment: Alignment.centerRight,
+                child: const Text(
                   'Click to download',
                   style: TextStyle(
                     fontSize: 14,
                     color: Colors.blue,
+                    decoration: TextDecoration.underline,
                   ),
-                )
-              ],
-            ),
-          ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  emptyData() {
+  Widget emptyData() {
     return const Center(
       child: Text(
-        "No data found for download.....",
-        style: TextStyle(fontSize: 16),
+        "No documents available for download.",
+        style: TextStyle(fontSize: 16, color: Colors.grey),
       ),
     );
   }
