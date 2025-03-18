@@ -66,7 +66,12 @@ class _ShowUploadDocState extends State<ShowUploadDoc> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Uploaded Documents', style: TextStyle(color: Colors.black54, fontSize: 18, fontWeight: FontWeight.bold),),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios, color: Colors.white, size: 20),
+          onPressed: () => Get.back(),
+        ),
+        backgroundColor: Colors.blue.shade900,
+        title: const Text('Uploaded Documents', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),),
         elevation: 0,
         centerTitle: true,
       ),

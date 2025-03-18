@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'styles/text_styles.dart'; // Import the text styles
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -31,7 +32,12 @@ class _MyAppState extends State<MyApp> {
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         primarySwatch: Colors.blue,
-        textTheme: GoogleFonts.poppinsTextTheme(Theme.of(context).textTheme),
+        textTheme: GoogleFonts.poppinsTextTheme(Theme.of(context).textTheme)
+            .copyWith(
+          displayLarge: AppTextStyles.heading,
+          displayMedium: AppTextStyles.subheading,
+          bodyLarge: AppTextStyles.bodyText,
+        ),
       ),
       home: FutureBuilder(
         future: AuthLogin.tryAutoLogin(),

@@ -9,6 +9,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'package:url_launcher/url_launcher.dart';
 import 'controller/globalvariable.dart';
+import '../styles/text_styles.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -103,11 +104,7 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               child: Text(
                 "Login",
-                style: TextStyle(
-                  fontSize: screenWidth / 18,
-                  fontFamily: GoogleFonts.poppins().fontFamily,
-                  wordSpacing: 2,
-                ),
+                style: AppTextStyles.heading,
               ),
             ),
             Container(
@@ -119,10 +116,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     padding: const EdgeInsets.only(left: 12),
                     child: Text(
                       "Employee ID",
-                      style: TextStyle(
-                        fontFamily: GoogleFonts.poppins().fontFamily,
-                        fontSize: screenWidth / 24,
-                      ),
+                      style: AppTextStyles.bodyText,
                     ),
                   ),
                   Container(
@@ -182,10 +176,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     padding: const EdgeInsets.only(left: 12, top: 20),
                     child: Text(
                       "Password",
-                      style: TextStyle(
-                        fontFamily: GoogleFonts.poppins().fontFamily,
-                        fontSize: screenWidth / 24,
-                      ),
+                      style: AppTextStyles.bodyText,
                     ),
                   ),
                   Container(

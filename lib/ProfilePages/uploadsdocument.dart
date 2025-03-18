@@ -66,18 +66,23 @@ class _UploadDocumentsState extends State<UploadDocuments> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[100],
+      backgroundColor: Colors.grey.shade100,
       appBar: AppBar(
+        backgroundColor: Colors.blue.shade900,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios, color: Colors.white, size: 20),
+          onPressed: () => Get.back(),
+        ),
         centerTitle: true,
         title: const Text(
           "Upload Documents",
-          style: TextStyle(color: Colors.black54, fontSize: 18, fontWeight: FontWeight.bold),
+          style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
         ),
         elevation: 0,
         actions: [
           IconButton(
             onPressed: () => Get.to(() => const ShowUploadDoc()),
-            icon: const Icon(Icons.file_upload),
+            icon: const Icon(Icons.file_upload, color: Colors.white),
           )
         ],
       ),
@@ -159,7 +164,7 @@ class _UploadDocumentsState extends State<UploadDocuments> {
                               ),
                               style: ElevatedButton.styleFrom(
                                 minimumSize: const Size(double.infinity, 50),
-                                backgroundColor: Colors.blueAccent,
+                                backgroundColor: Colors.blue.shade900,
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(8.0),
                                 ),

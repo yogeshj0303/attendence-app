@@ -1,4 +1,5 @@
 import 'package:employeeattendance/DrawerPage/leaveapplication.dart';
+import 'package:employeeattendance/HomePage/main_screen.dart';
 import 'package:employeeattendance/api_services.dart';
 import 'package:employeeattendance/controller/globalvariable.dart';
 import 'package:flutter/material.dart';
@@ -20,6 +21,7 @@ class _AutoLeaveScreenState extends State<AutoLeaveScreen> {
   final ApiService _holidayService = ApiService();
   List<Map<String, dynamic>> _leaveData = [];
   String _employeeId = '';
+  bool _isLoading = true;
 
   @override
   void initState() {
@@ -29,10 +31,13 @@ class _AutoLeaveScreenState extends State<AutoLeaveScreen> {
 
   Future<void> _loadEmployeeId() async {
     setState(() {
-      _employeeId = GlobalVariable.empID; // Default to 'ACT2038' if not found
+      _employeeId = GlobalVariable.empID;
     });
-    _fetchHolidays();
-    _fetchLeaveData();
+    await _fetchHolidays();
+    await _fetchLeaveData();
+    setState(() {
+      _isLoading = false;
+    });
   }
 
   Future<void> _fetchHolidays() async {
@@ -44,7 +49,6 @@ class _AutoLeaveScreenState extends State<AutoLeaveScreen> {
         };
       });
     } catch (e) {
-      // Handle error
       print('Error fetching holidays: $e');
     }
   }
@@ -66,11 +70,17 @@ class _AutoLeaveScreenState extends State<AutoLeaveScreen> {
       backgroundColor: Colors.white,
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black54,
+        backgroundColor: Colors.blue.shade900,
+        foregroundColor: Colors.white,
         elevation: 0,
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back_ios, color: Colors.white, size: 20),
+          onPressed: () {
+            Navigator.push(context, MaterialPageRoute(builder: (context) => MainScreen()));
+          },
+        ),
         centerTitle: true,
-        title: Text('Leave', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: Text('Leaves', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.white)),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -82,36 +92,38 @@ class _AutoLeaveScreenState extends State<AutoLeaveScreen> {
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             SizedBox(height: 8),
-            ToggleButtons(
-              borderRadius: BorderRadius.circular(8),
-              fillColor: Colors.blue.shade900.withOpacity(0.1),
-              selectedColor: Colors.blue.shade900,
-              children: <Widget>[
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                  child: Text('Leave Balance'),
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                  child: Text('Holiday Calendar'),
-                ),
-              ],
-              isSelected: _isSelected,
-              onPressed: (int index) {
-                setState(() {
-                  for (int i = 0; i < _isSelected.length; i++) {
-                    _isSelected[i] = i == index;
-                  }
-                });
-              },
+            SizedBox(
+              width: double.infinity,
+              child: ToggleButtons(
+                borderRadius: BorderRadius.circular(8),
+                fillColor: Colors.blue.shade900.withOpacity(0.1),
+                selectedColor: Colors.blue.shade900,
+                children: <Widget>[
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 22.0),
+                    child: Text('Leave Balance'),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 22.0),
+                    child: Text('Holiday Calendar'),
+                  ),
+                ],
+                isSelected: _isSelected,
+                onPressed: (int index) {
+                  setState(() {
+                    for (int i = 0; i < _isSelected.length; i++) {
+                      _isSelected[i] = i == index;
+                    }
+                  });
+                },
+              ),
             ),
             SizedBox(height: 16),
             Expanded(
               child: _isSelected[0]
-                  ? SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: _buildLeaveDataTable(),
-                    )
+                  ? _isLoading
+                      ? Center(child: CircularProgressIndicator())
+                      : _buildLeaveDataTable()
                   : _buildHolidayCalendar(),
             ),
             Row(
@@ -133,10 +145,13 @@ class _AutoLeaveScreenState extends State<AutoLeaveScreen> {
                     padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                   ),
                 ),
-                SizedBox(width: 8), // Add spacing between buttons
+                SizedBox(width: 8),
                 ElevatedButton.icon(
                   onPressed: () {
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => LeaveApplication()));
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => LeaveApplication()),
+                    );
                   },
                   icon: Icon(Icons.add, color: Colors.white),
                   label: Text('Apply Leave', style: TextStyle(color: Colors.white)),
@@ -154,65 +169,88 @@ class _AutoLeaveScreenState extends State<AutoLeaveScreen> {
   }
 
   Widget _buildLeaveDataTable() {
-    return DataTable(
-      columnSpacing: 16.0,
-      headingRowColor: MaterialStateColor.resolveWith((states) => Colors.blue.shade900.withOpacity(0.1)),
-      columns: [
-        DataColumn(
-          label: Text(
-            'Leave Type',
-            style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black54, fontSize: 12),
-          ),
-        ),
-        DataColumn(
-          label: Text(
-            'Reason',
-            style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black54, fontSize: 12),
-          ),
-        ),
-        DataColumn(
-          label: Text(
-            'Start Date',
-            style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black54, fontSize: 12),
-          ),
-        ),
-        DataColumn(
-          label: Text(
-            'End Date',
-            style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black54, fontSize: 12),
-          ),
-        ),
-        DataColumn(
-          label: Text(
-            'Leave Count',
-            style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black54, fontSize: 12),
-          ),
-          numeric: true,
-        ),
-        DataColumn(
-          label: Text(
-            'Approved Date',
-            style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black54, fontSize: 12),
-          ),
-        ),
-      ],
-      rows: _leaveData.map((leave) {
+    return ListView.builder(
+      itemCount: _leaveData.length,
+      itemBuilder: (context, index) {
+        final leave = _leaveData[index];
         final startDate = parseCustomDate(leave['start_date']);
         final endDate = parseCustomDate(leave['end_date']);
         final leaveCount = endDate.difference(startDate).inDays + 1;
         final status = leave['status'] == '2' ? 'Rejected' : 'Approved on ${leave['approved_date'] ?? 'N/A'}';
 
-        return DataRow(
-          cells: [
-            DataCell(Text(leave['type'], style: TextStyle(fontSize: 12))),
-            DataCell(Text(leave['region'], style: TextStyle(fontSize: 12))),
-            DataCell(Center(child: Text(leave['start_date'], style: TextStyle(fontSize: 12)))),
-            DataCell(Center(child: Text(leave['end_date'], style: TextStyle(fontSize: 12)))),
-            DataCell(Center(child: Text('$leaveCount', style: TextStyle(fontSize: 12)))),
-            DataCell(Center(child: Text(status, style: TextStyle(fontSize: 12)))),
-          ],
+        return Card(
+          margin: EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
+          elevation: 6.0,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15.0),
+          ),
+          child: Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Colors.blue.shade50, Colors.blue.shade100],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(15.0),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Leave Type: ${leave['type']}',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.blue.shade900,
+                        ),
+                      ),
+                      Icon(Icons.beach_access, color: Colors.blue.shade900),
+                    ],
+                  ),
+                  SizedBox(height: 8),
+                  Text(
+                    'Reason: ${leave['region']}',
+                    style: TextStyle(fontSize: 14, color: Colors.black87),
+                  ),
+                  SizedBox(height: 8),
+                  Column(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Start Date: ${leave['start_date']}',
+                        style: TextStyle(fontSize: 14, color: Colors.black54),
+                      ),
+                      Text(
+                        'End Date: ${leave['end_date']}',
+                        style: TextStyle(fontSize: 14, color: Colors.black54),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 8),
+                  Text(
+                    'Leave Count: $leaveCount',
+                    style: TextStyle(fontSize: 14, color: Colors.black87),
+                  ),
+                  SizedBox(height: 8),
+                  Text(
+                    'Status: $status',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: status.contains('Rejected') ? Colors.red : Colors.green,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
         );
-      }).toList(),
+      },
     );
   }
 

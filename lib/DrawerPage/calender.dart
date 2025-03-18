@@ -25,7 +25,7 @@ class _CalenderState extends State<Calender> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Colors.grey.shade100,
       appBar: AppBar(
         backgroundColor: Colors.blue.shade900,
         title: const Text("Attendance", style: TextStyle(color: Colors.white)),
@@ -69,92 +69,100 @@ class _CalenderState extends State<Calender> {
     );
   }
 
-  Container buildTile(AsyncSnapshot<CalenderModel> snapshot, int index) {
+  Card buildTile(AsyncSnapshot<CalenderModel> snapshot, int index) {
     bool isPresent = snapshot.data!.data![index].workStatus == 'Present';
-    return Container(
-      margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
-      width: double.infinity,
-      decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12.0),
-          border: Border.all(color: Colors.black12)),
+    return Card(
+      margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12.0),
+      ),
+      elevation: 3,
       child: Padding(
-        padding: const EdgeInsets.all(12.0),
+        padding: const EdgeInsets.all(16.0),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
               snapshot.data!.data![index].date!,
-              textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
+            const SizedBox(height: 4),
             Text(
               snapshot.data!.data![index].day!,
-              textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              style: const TextStyle(fontSize: 16, color: Colors.grey),
             ),
-            const SizedBox(height: 5),
+            const Divider(),
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  snapshot.data!.data![index].checkin!,
-                  style: const TextStyle(fontSize: 16, color: Colors.green),
+                Row(
+                  children: [
+                    const Icon(Icons.login, color: Colors.green),
+                    const SizedBox(width: 4),
+                    Text(
+                      snapshot.data!.data![index].checkin!,
+                      style: const TextStyle(fontSize: 16, color: Colors.green),
+                    ),
+                  ],
                 ),
                 const Text("---"),
-                Text(
-                  snapshot.data!.data![index].checkout!,
-                  style: const TextStyle(fontSize: 16, color: Colors.red),
+                Row(
+                  children: [
+                    const Icon(Icons.logout, color: Colors.red),
+                    const SizedBox(width: 4),
+                    Text(
+                      snapshot.data!.data![index].checkout!,
+                      style: const TextStyle(fontSize: 16, color: Colors.red),
+                    ),
+                  ],
                 ),
               ],
             ),
-            const SizedBox(height: 5),
+            const SizedBox(height: 8),
             Container(
               alignment: Alignment.center,
               height: 30,
-              width: 180,
+              width: double.infinity,
               decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(10),
-                  color: Colors.white,
-                  border: Border.all(color: Colors.greenAccent)),
+                  color: Colors.blue.shade50,
+                  border: Border.all(color: Colors.blueAccent)),
               child: Text(
                 "Working hour : ${snapshot.data!.data![index].workingHours}",
                 style: const TextStyle(fontSize: 16),
               ),
             ),
-            const SizedBox(height: 5),
-            const Text('Check-In Location'),
+            const SizedBox(height: 8),
+            const Text('Check-In Location', style: TextStyle(fontWeight: FontWeight.bold)),
             Text(
               snapshot.data!.data![index].checkinLocation!,
-              textAlign: TextAlign.center,
               style: const TextStyle(
                   fontSize: 16,
-                  fontWeight: FontWeight.w500,
                   color: Colors.indigoAccent),
             ),
-            const SizedBox(height: 5),
-            const Text('Check-Out Location'),
+            const SizedBox(height: 8),
+            const Text('Check-Out Location', style: TextStyle(fontWeight: FontWeight.bold)),
             Text(
               snapshot.data!.data![index].checkoutLocation ?? '-----',
-              textAlign: TextAlign.center,
               style: const TextStyle(
                   fontSize: 16,
-                  fontWeight: FontWeight.w500,
                   color: Colors.indigoAccent),
             ),
-            const SizedBox(height: 5),
+            const SizedBox(height: 8),
             Row(
-              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.start,
               children: [
                 const Text('Status : ',
                     style: TextStyle(
+                      overflow: TextOverflow.ellipsis,
                       fontSize: 16,
                       fontWeight: FontWeight.w500,
                     )),
                 Text(
                   snapshot.data!.data![index].workStatus ?? 'Not Available',
-                  textAlign: TextAlign.center,
                   style: TextStyle(
-                    fontSize: 16,
+                    overflow: TextOverflow.ellipsis,
+                    fontSize: 14,
                     fontWeight: FontWeight.w500,
                     color: isPresent ? Colors.green : Colors.red,
                   ),

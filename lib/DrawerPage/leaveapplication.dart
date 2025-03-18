@@ -78,156 +78,343 @@ class _LeaveApplicationState extends State<LeaveApplication> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        elevation: 1,
+        elevation: 0,
         backgroundColor: Colors.blue.shade900,
-        title: const Text("Leave Application Form",
-            style: TextStyle(color: Colors.white)),
+        title: const Text(
+          "Leave Application",
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 20,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () {
-            Get.back();
-          },
+          icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
+          onPressed: () => Get.back(),
         ),
       ),
       body: isLoading
           ? const Center(
               child: CircularProgressIndicator(),
             )
-          : Padding(
-              padding: const EdgeInsets.all(20.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    "Type of leave :",
-                    style: TextStyle(fontSize: 16),
-                  ),
-                  const SizedBox(height: 5),
-                  DropdownButtonFormField<String>(
-                    decoration: const InputDecoration(
-                      border: OutlineInputBorder(),
-                    ),
-                    value: selectedValue,
-                    items: leaveType
-                        .map((item) => DropdownMenuItem<String>(
-                            value: item,
-                            child: Center(
-                              child: Text(item),
-                            )))
-                        .toList(),
-                    onChanged: ((value) => setState(() {
-                          selectedValue = value!;
-                        })),
-                  ),
-                  const SizedBox(height: 15),
-                  const Text(
-                    "Reason :",
-                    style: TextStyle(fontSize: 16),
-                  ),
-                  const SizedBox(height: 5),
-                  TextFormField(
-                    controller: reasonController,
-                    decoration: const InputDecoration(
-                      border: OutlineInputBorder(),
-                      hintText: "Write specific reason.....",
-                      suffixIcon: Icon(Icons.app_registration),
-                    ),
-                  ),
-                  const SizedBox(height: 15),
-                  const Text(
-                    "From :",
-                    style: TextStyle(fontSize: 16),
-                  ),
-                  const SizedBox(height: 5),
-                  TextFormField(
-                    readOnly: true,
-                    onTap: () async {
-                      DateTime? pickedDate = await showDatePicker(
-                          context: context,
-                          initialDate: DateTime.now(),
-                          firstDate: DateTime(2020),
-                          lastDate: DateTime(2025));
-                      if (pickedDate != null) {
-                        String formattedDate =
-                            DateFormat("dd-MMM-yyyy").format(pickedDate);
-                        setState(() {
-                          fromDateController.text = formattedDate;
-                        });
-                      }
-                    },
-                    decoration: const InputDecoration(
-                      border: OutlineInputBorder(),
-                      hintText: "DD/MM/YYYY",
-                      suffixIcon: Icon(Icons.calendar_month_outlined),
-                    ),
-                    controller: fromDateController,
-                  ),
-                  const SizedBox(height: 15),
-                  const Text(
-                    "To :",
-                    style: TextStyle(fontSize: 16),
-                  ),
-                  const SizedBox(height: 5),
-                  TextFormField(
-                    readOnly: true,
-                    onTap: () async {
-                      DateTime? pickedDate = await showDatePicker(
-                          context: context,
-                          initialDate: DateTime.now(),
-                          firstDate: DateTime(2020),
-                          lastDate: DateTime(2025));
-                      if (pickedDate != null) {
-                        String formattedDate =
-                            DateFormat("dd-MMM-yyyy").format(pickedDate);
-                        setState(() {
-                          toDateController.text = formattedDate;
-                        });
-                      }
-                    },
-                    decoration: const InputDecoration(
-                      border: OutlineInputBorder(),
-                      hintText: "DD/MM/YYYY",
-                      suffixIcon: Icon(Icons.calendar_month_outlined),
-                    ),
-                    controller: toDateController,
-                  ),
-                  const SizedBox(height: 35),
-                  GestureDetector(
-                    onTap: () {
-                      String type = selectedValue;
-                      if (reasonController.text.isNotEmpty ||
-                          fromDateController.text.isNotEmpty ||
-                          toDateController.text.isNotEmpty ||
-                          type != "-----") {
-                        applyForLeave(selectedValue, reasonController.text,
-                            fromDateController.text, toDateController.text);
-                        reasonController.clear();
-                        fromDateController.clear();
-                        toDateController.clear();
-                        setState(() {
-                          selectedValue = '-----';
-                        });
-                      } else {
-                        Fluttertoast.showToast(
-                            msg: 'Please fill in all details');
-                      }
-                    },
-                    child: Container(
-                      height: 50,
+          : SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.all(24.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildSectionTitle("Type of Leave"),
+                    const SizedBox(height: 8),
+                    Container(
                       decoration: BoxDecoration(
-                        color: Colors.blue.shade900,
-                        borderRadius: BorderRadius.circular(12.0),
+                        borderRadius: BorderRadius.circular(12),
+                        color: Colors.white,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.05),
+                            blurRadius: 10,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
                       ),
-                      child: const Center(
-                          child: Text(
-                        "APPLY",
-                        style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
-                      )),
+                      child: DropdownButtonFormField<String>(
+                        decoration: InputDecoration(
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(color: Colors.grey.shade200),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(color: Colors.grey.shade200),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(color: Colors.blue.shade900),
+                          ),
+                          filled: true,
+                          fillColor: Colors.white,
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                        ),
+                        value: selectedValue,
+                        items: leaveType
+                            .map((item) => DropdownMenuItem<String>(
+                                value: item,
+                                child: Text(item, 
+                                  style: TextStyle(
+                                    fontSize: 15,
+                                    color: item == '-----' ? Colors.grey : Colors.black87,
+                                  )
+                                )))
+                            .toList(),
+                        onChanged: ((value) => setState(() {
+                              selectedValue = value!;
+                            })),
+                      ),
                     ),
-                  ),
-                ],
+                    const SizedBox(height: 24),
+                    _buildSectionTitle("Reason"),
+                    const SizedBox(height: 8),
+                    Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(12),
+                        color: Colors.white,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.05),
+                            blurRadius: 10,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: TextFormField(
+                        controller: reasonController,
+                        maxLines: 3,
+                        decoration: InputDecoration(
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(color: Colors.grey.shade200),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(color: Colors.grey.shade200),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(color: Colors.blue.shade900),
+                          ),
+                          filled: true,
+                          fillColor: Colors.white,
+                          hintText: "Please provide specific details...",
+                          hintStyle: TextStyle(color: Colors.grey[400]),
+                          contentPadding: const EdgeInsets.all(16),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _buildSectionTitle("From"),
+                              const SizedBox(height: 8),
+                              _buildDateField(fromDateController, context, true),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _buildSectionTitle("To"),
+                              const SizedBox(height: 8),
+                              _buildDateField(toDateController, context, false),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 40),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 54,
+                      child: ElevatedButton(
+                        onPressed: () {
+                          if (reasonController.text.isNotEmpty &&
+                              fromDateController.text.isNotEmpty &&
+                              toDateController.text.isNotEmpty &&
+                              selectedValue != "-----") {
+                            applyForLeave(selectedValue, reasonController.text,
+                                fromDateController.text, toDateController.text);
+                            reasonController.clear();
+                            fromDateController.clear();
+                            toDateController.clear();
+                            setState(() {
+                              selectedValue = '-----';
+                            });
+                          } else {
+                            Fluttertoast.showToast(
+                                msg: 'Please fill in all details');
+                          }
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.blue.shade900,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          elevation: 0,
+                        ),
+                        child: const Text(
+                          "Submit Application",
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
+    );
+  }
+
+  Widget _buildSectionTitle(String title) {
+    return Text(
+      title,
+      style: const TextStyle(
+        fontSize: 16,
+        fontWeight: FontWeight.w600,
+        color: Colors.black87,
+      ),
+    );
+  }
+
+  Widget _buildDateField(TextEditingController controller, BuildContext context, bool isFromDate) {
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: TextFormField(
+        controller: controller,
+        readOnly: true,
+        onTap: () async {
+          DateTime initialDate = DateTime.now();
+          
+          DateTime? pickedDate = await showDatePicker(
+            context: context,
+            initialDate: initialDate,
+            firstDate: isFromDate ? DateTime.now() : 
+                      fromDateController.text.isNotEmpty ? 
+                      DateFormat("dd-MMM-yyyy").parse(fromDateController.text) : 
+                      DateTime.now(),
+            lastDate: DateTime(2025),
+            initialEntryMode: DatePickerEntryMode.calendarOnly,
+            selectableDayPredicate: (DateTime date) {
+              if (isFromDate && toDateController.text.isNotEmpty) {
+                final toDate = DateFormat("dd-MMM-yyyy").parse(toDateController.text);
+                return date.isBefore(toDate) || date.isAtSameMomentAs(toDate);
+              } else if (!isFromDate && fromDateController.text.isNotEmpty) {
+                final fromDate = DateFormat("dd-MMM-yyyy").parse(fromDateController.text);
+                return date.isAfter(fromDate) || date.isAtSameMomentAs(fromDate);
+              }
+              return true;
+            },
+            builder: (context, child) {
+              return Theme(
+                data: Theme.of(context).copyWith(
+                  colorScheme: ColorScheme.light(
+                    primary: Colors.blue.shade900,
+                    onPrimary: Colors.white,
+                    surface: Colors.white,
+                    onSurface: Colors.black87,
+                  ),
+                  dialogBackgroundColor: Colors.white,
+                  datePickerTheme: DatePickerThemeData(
+                    dayStyle: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                    ),
+                    weekdayStyle: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.blue.shade900,
+                    ),
+                    dayBackgroundColor: MaterialStateProperty.resolveWith((states) {
+                      if (states.contains(MaterialState.selected)) {
+                        return Colors.blue.shade900;
+                      }
+                      return Colors.transparent;
+                    }),
+                    dayForegroundColor: MaterialStateProperty.resolveWith((states) {
+                      if (states.contains(MaterialState.selected)) {
+                        return Colors.white;
+                      }
+                      if (states.contains(MaterialState.disabled)) {
+                        return Colors.grey.shade400;
+                      }
+                      return Colors.black87;
+                    }),
+                    todayBackgroundColor: MaterialStateProperty.resolveWith((states) {
+                      if (states.contains(MaterialState.selected)) {
+                        return Colors.blue.shade900;
+                      }
+                      return Colors.blue.shade50;
+                    }),
+                    todayBorder: BorderSide(
+                      color: Colors.blue.shade900,
+                      width: 1,
+                    ),
+                    headerBackgroundColor: Colors.blue.shade900,
+                    headerForegroundColor: Colors.white,
+                    surfaceTintColor: Colors.transparent,
+                  ),
+                ),
+                child: Center(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(16),
+                      color: Colors.white,
+                    ),
+                    child: child!,
+                  ),
+                ),
+              );
+            },
+          );
+          
+          if (pickedDate != null) {
+            String formattedDate = DateFormat("dd-MMM-yyyy").format(pickedDate);
+            setState(() {
+              controller.text = formattedDate;
+              
+              if (isFromDate && toDateController.text.isNotEmpty) {
+                final toDate = DateFormat("dd-MMM-yyyy").parse(toDateController.text);
+                if (pickedDate.isAfter(toDate)) {
+                  toDateController.clear();
+                }
+              } else if (!isFromDate && fromDateController.text.isNotEmpty) {
+                final fromDate = DateFormat("dd-MMM-yyyy").parse(fromDateController.text);
+                if (pickedDate.isBefore(fromDate)) {
+                  fromDateController.clear();
+                }
+              }
+            });
+          }
+        },
+        decoration: InputDecoration(
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(color: Colors.grey.shade200),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(color: Colors.grey.shade200),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(color: Colors.blue.shade900),
+          ),
+          filled: true,
+          fillColor: Colors.white,
+          hintText: "Select Date",
+          hintStyle: TextStyle(color: Colors.grey[400]),
+          suffixIcon: Icon(Icons.calendar_today, size: 20, color: Colors.blue.shade900),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        ),
+      ),
     );
   }
 }

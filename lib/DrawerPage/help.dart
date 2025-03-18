@@ -1,74 +1,76 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 
-class SupportScreen extends StatelessWidget {
+class SupportScreen extends StatefulWidget {
   const SupportScreen({super.key});
 
   @override
+  State<SupportScreen> createState() => _SupportScreenState();
+}
+
+class _SupportScreenState extends State<SupportScreen> {
+    Future<void> _launchURL(String urlString) async {
+    final Uri url = Uri.parse(urlString);
+    if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
+      throw Exception('Could not launch $urlString');
+    }
+  }
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[200],
+      appBar: AppBar(
+        centerTitle: true,
+        title: const Text('Support', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+        backgroundColor: Colors.blue.shade900,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios, color: Colors.white, size: 20),
+          onPressed: () {
+            Navigator.pop(context);
+          },
+        ),
+      ),
+      backgroundColor: Colors.white,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.arrow_back),
-                    onPressed: () {
-                      Navigator.pop(context);
-                    },
-                  ),
-                  const Text(
-                    'Support',
-                    style: TextStyle(
-                      fontSize: 18.0,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(width: 48.0),
-                ],
-              ),
-              const SizedBox(height: 40),
               Center(
-                child: Image.asset(
-                  'assets/images/support.png', // Replace with your asset image path
-                  width: 100,
-                  height: 100,
+                child: Container(
+                  child: Image.asset(
+                    color: Colors.blue.shade900,
+                    'assets/images/support.png',
+                    width: 120,
+                    height: 120,
+                  ),
                 ),
               ),
               const SizedBox(height: 20),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                child: const Text(
-                  'Hello, How can we\nHelp you?',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
-                  textAlign: TextAlign.center,
+              const Text(
+                'Hello, How can we\nHelp you?',
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
                 ),
+                textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 80),
+              const SizedBox(height: 40),
               _buildSupportOption(
                 context,
                 'Contact Live Chat',
                 Icons.chat_bubble,
-                    () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const LiveChatScreen()),
-                  );
+                () async {
+                  await _launchURL('https://wa.me/9329143659');
                 },
               ),
               _buildSupportOption(
                 context,
                 'Send us an E-mail',
                 Icons.email,
-                    () {
+                () {
                   Navigator.push(
                     context,
                     MaterialPageRoute(builder: (context) => const EmailScreen()),
@@ -79,7 +81,7 @@ class SupportScreen extends StatelessWidget {
                 context,
                 'FAQs',
                 Icons.question_answer,
-                    () {
+                () {
                   Navigator.push(
                     context,
                     MaterialPageRoute(builder: (context) => const FAQsScreen()),
@@ -103,31 +105,35 @@ class SupportScreen extends StatelessWidget {
       onTap: onTap,
       child: Card(
         color: Colors.white,
-        elevation: 0,
+        elevation: 3,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10),
+        ),
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16.0),
           child: Container(
             padding: const EdgeInsets.symmetric(vertical: 16.0),
-            decoration: BoxDecoration(
-              border: Border(
-                bottom: BorderSide(
-                  color: Colors.grey.withOpacity(0.2),
-                  width: 1.0,
-                ),
-              ),
-            ),
             child: Row(
               children: [
-                Icon(icon),
+                ShaderMask(
+                  shaderCallback: (Rect bounds) {
+                    return LinearGradient(
+                      colors: <Color>[Colors.blue, Colors.purple],
+                      tileMode: TileMode.mirror,
+                    ).createShader(bounds);
+                  },
+                  child: Icon(icon, color: Colors.white),
+                ),
                 const SizedBox(width: 16.0),
                 Text(
                   title,
                   style: const TextStyle(
-                    fontSize: 16.0,
+                    fontSize: 18.0,
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
                 const Spacer(),
-                const Icon(Icons.arrow_forward_ios, size: 16),
+                const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
               ],
             ),
           ),
@@ -351,7 +357,7 @@ class _EmailScreenState extends State<EmailScreen> {
               ),
               const SizedBox(height: 10),
               const Text(
-                "Please fill out the form below to send us your query or feedback. We’ll get back to you shortly.",
+                "Please fill out the form below to send us your query or feedback. We'll get back to you shortly.",
                 style: TextStyle(fontSize: 16, color: Colors.black54),
               ),
               const SizedBox(height: 40),

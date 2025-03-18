@@ -10,6 +10,7 @@ import 'package:employeeattendance/DrawerPage/leaveapplication.dart';
 import 'package:employeeattendance/DrawerPage/calender.dart';
 import 'package:employeeattendance/HomePage/notification_screen.dart';
 import 'package:employeeattendance/HomePage/today_screen.dart';
+import 'package:employeeattendance/PayrollPage/payroll_screen.dart';
 import 'package:employeeattendance/class/constants.dart';
 import 'package:employeeattendance/controller/globalvariable.dart';
 import 'package:employeeattendance/controller/location.dart';
@@ -48,23 +49,30 @@ class _HomeScreenState extends State<HomeScreen> {
     screenHeight = MediaQuery.of(context).size.height;
     screenWidth = MediaQuery.of(context).size.width;
     return Scaffold(
-      backgroundColor: Colors.grey.shade200,
+      backgroundColor: Colors.grey[50],
       drawer: buildDrawer(),
       appBar: AppBar(
-        title: const Text(
-          "HR Hub",
-          style: TextStyle(
-            fontSize: 23,
+        backgroundColor: Colors.blue.shade900,
+        iconTheme: const IconThemeData(color: Colors.white),
+        title: Text(
+          "TECH HR",
+          style: GoogleFonts.roboto(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
           ),
         ),
         centerTitle: true,
-        elevation: 0,
+        elevation: 4,
         actions: [
           IconButton(
-              onPressed: () => Get.to(() => const NotificationScreen()),
-              icon: const Icon(Icons.notifications)),
+            onPressed: () => Get.to(() => const NotificationScreen()),
+            icon: const Icon(Icons.notifications, color: Colors.white, size: 20),
+          ),
           IconButton(
             onPressed: () => Get.defaultDialog(
+              backgroundColor: Colors.white,
+              buttonColor: Colors.blue.shade900,
               title: "Are you sure you want to logout?",
               middleText: "Tap on confirm to logout or cancel to go back",
               onCancel: () => Get.back(),
@@ -74,7 +82,8 @@ class _HomeScreenState extends State<HomeScreen> {
             tooltip: "Logout",
             icon: const Icon(
               Icons.logout,
-              size: 25,
+              size: 20,
+              color: Colors.white,
             ),
           ),
         ],
@@ -82,79 +91,28 @@ class _HomeScreenState extends State<HomeScreen> {
       body: isLoaded
           ? const Center(child: CircularProgressIndicator())
           : ListView(
+              padding: const EdgeInsets.all(10),
               children: [
                 buildPunchIn(),
                 const SizedBox(height: 10),
-                Container(
-                  color: Colors.white,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.only(left: 12),
-                        child: Text(
-                          "News & Events",
-                          style: text,
-                        ),
-                      ),
-                      buildNews(),
-                    ],
-                  ),
+                buildSection(
+                  title: "News & Updates",
+                  child: buildNews(),
                 ),
                 const SizedBox(height: 10),
-                Container(
-                  color: Colors.white,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.only(left: 12),
-                        child: Text(
-                          "Your Time & Attendance",
-                          style: text,
-                        ),
-                      ),
-                      buildTime(),
-                    ],
-                  ),
+                buildSection(
+                  title: "Leave & Attendance",
+                  child: buildTime(),
                 ),
                 const SizedBox(height: 10),
-                Container(
-                  color: Colors.white,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.only(left: 12),
-                        child: Text(
-                          "Birthdays and Anniversaries",
-                          style: text,
-                        ),
-                      ),
-                      buildBirthday(),
-                    ],
-                  ),
+                buildSection(
+                  title: "Birthdays and Anniversaries",
+                  child: buildBirthday(),
                 ),
                 const SizedBox(height: 10),
-                Container(
-                  color: Colors.white,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.only(left: 12),
-                        child: Text(
-                          "Rewards & Recognition",
-                          style: text,
-                        ),
-                      ),
-                      buildReward(),
-                    ],
-                  ),
+                buildSection(
+                  title: "Rewards & Recognition",
+                  child: buildReward(),
                 ),
               ],
             ),
@@ -164,11 +122,22 @@ class _HomeScreenState extends State<HomeScreen> {
   Container buildPunchIn() {
     return Container(
       height: screenHeight / 6,
-      color: Colors.white,
+      margin: const EdgeInsets.symmetric(vertical: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(10),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black12,
+            blurRadius: 4,
+            offset: Offset(0, 2),
+          ),
+        ],
+      ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          const SizedBox(width: 1),
           const Icon(
             Icons.fingerprint_outlined,
             color: Colors.green,
@@ -179,21 +148,28 @@ class _HomeScreenState extends State<HomeScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 3),
-              GlobalVariable.checkInStatus == 0
-                  ? Text('Check In', style: TextStyle(
-                  color: Colors.black, fontSize: 14, fontWeight: FontWeight.w500
-              ))
-                  : GlobalVariable.checkOutStatus == 0
-                      ? Text('Check-Out', style: TextStyle(
-                          color: Colors.black, fontSize: 14, fontWeight: FontWeight.w500
-              ))
-                      : Text('Done', style: boldText),
+              Text(
+                GlobalVariable.checkInStatus == 0
+                    ? 'Check In'
+                    : GlobalVariable.checkOutStatus == 0
+                        ? 'Check Out'
+                        : 'Done',
+                style: TextStyle(
+                  color: Colors.black,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
               SizedBox(
-                width: 100,
-                child: Text("Last Usage : ${GlobalVariable.lastUsage}",
-                    style: TextStyle(
-                        color: Colors.black45, fontSize: 12, fontWeight: FontWeight.w500
-                    )),
+                width: 120,
+                child: Text(
+                  "${GlobalVariable.lastUsage}",
+                  style: TextStyle(
+                    color: Colors.black45,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
               ),
               const LocationPage(),
             ],
@@ -220,28 +196,30 @@ class _HomeScreenState extends State<HomeScreen> {
               alignment: Alignment.center,
               height: 40,
               width: screenWidth / 3.5,
-              decoration: const BoxDecoration(
-                color: Colors.blue,
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(10),
-                  bottomLeft: Radius.circular(10),
-                ),
+              decoration: BoxDecoration(
+                color: Colors.blue.shade900,
+                borderRadius: BorderRadius.circular(10),
               ),
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  GlobalVariable.checkInStatus == 0
-                      ? Text('Check In', style: TextStyle(
-                      color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600
-                  ))
-                      : GlobalVariable.checkOutStatus == 0
-                          ? Text('Check-Out', style: whiteSText)
-                          : Text('Done', style: whiteSText),
+                  Text(
+                    GlobalVariable.checkInStatus == 0
+                        ? 'Check In '
+                        : GlobalVariable.checkOutStatus == 0
+                            ? 'Check Out '
+                            : 'Done',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
                   const Icon(
                     Icons.arrow_forward_ios,
                     color: Colors.white,
                     size: 12,
-                  )
+                  ),
                 ],
               ),
             ),
@@ -430,171 +408,160 @@ class _HomeScreenState extends State<HomeScreen> {
   Drawer buildDrawer() {
     return Drawer(
       clipBehavior: Clip.antiAlias,
-      backgroundColor: Colors.blue.shade900, // Deep blue background color
-      child: SafeArea(
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: [
-            // Header section with profile details and profile picture in a row
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 10),
-              child: Row(
+      backgroundColor: Colors.blue.shade900,
+      child: Column(
+        children: [
+          Expanded(
+            child: SafeArea(
+              child: ListView(
+                padding: EdgeInsets.zero,
                 children: [
-                  Container(
-                    width: 75.0, // Width of the profile picture
-                    height: 75.0, // Height of the profile picture
-                    decoration: BoxDecoration(
-                      color: Colors.white, // White background for the border
-                      borderRadius: BorderRadius.circular(50.0), // Circular border
-                      border: Border.all(
-                        color: Colors.white, // Color of the border (white)
-                        width: 2, // Border width
-                      ),
-                      image: DecorationImage(
-                        image: CachedNetworkImageProvider(imageUrl),
-                        fit: BoxFit.cover,
-                      ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 10),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 75.0,
+                          height: 75.0,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(50.0),
+                            border: Border.all(
+                              color: Colors.white,
+                              width: 2,
+                            ),
+                            image: DecorationImage(
+                              image: CachedNetworkImageProvider(imageUrl),
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+                        ),
+              
+                        const SizedBox(width: 16),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              GlobalVariable.name,
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontFamily: GoogleFonts.arimo().fontFamily,
+                              ),
+                            ),
+                            Text(
+                              GlobalVariable.email,
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.white70,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            Text(
+                              GlobalVariable.number,
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.white70,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
                   ),
-
-                  const SizedBox(width: 16), // Space between profile pic and details
-                  // User details section
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        GlobalVariable.name,
+                  const Divider(color: Colors.white70, height: 0, indent: 20, endIndent: 20),
+                  _buildDrawerItem(
+                    icon: FontAwesomeIcons.houseChimneyUser,
+                    title: "Home",
+                    onTap: () => Navigator.pop(context),
+                  ),
+                  _buildDrawerItem(
+                    icon: FontAwesomeIcons.idCard,
+                    title: "Profile",
+                    onTap: () => Get.to(() => const ProfileScreen()),
+                  ),
+                  _buildDrawerItem(
+                    icon: FontAwesomeIcons.calendarDay,
+                    title: "Attendance",
+                    onTap: () => Get.to(() => const Calender()),
+                  ),
+                  Theme(
+                    data: Theme.of(context).copyWith(
+                      dividerColor: Colors.transparent,
+                    ),
+                    child: ExpansionTile(
+                      leading: Icon(FontAwesomeIcons.personWalkingArrowRight, color: Colors.white, size: 20),
+                      title: Text(
+                        "Leaves",
                         style: TextStyle(
-                          fontSize: 14,
                           color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontFamily: GoogleFonts.arimo().fontFamily,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
                         ),
                       ),
-                      Text(
-                        GlobalVariable.email,
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Colors.white70,
-                          fontWeight: FontWeight.bold,
+                      iconColor: Colors.white,
+                      collapsedIconColor: Colors.white,
+                      tilePadding: EdgeInsets.symmetric(horizontal: 16, vertical: 0),
+                      childrenPadding: EdgeInsets.only(bottom: 8),
+                      backgroundColor: Colors.blue.shade900,
+                      collapsedBackgroundColor: Colors.transparent,
+                      children: [
+                        _buildDrawerSubItem(
+                          title: "Apply for Leave",
+                          icon: FontAwesomeIcons.fileCirclePlus,
+                          onTap: () => Get.to(() => const LeaveApplication()),
                         ),
-                      ),
-                      Text(
-                        GlobalVariable.number,
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Colors.white70,
-                          fontWeight: FontWeight.bold,
+                        _buildDrawerSubItem(
+                          title: "Leave Request History",
+                          icon: FontAwesomeIcons.clockRotateLeft,
+                          onTap: () => Get.to(() => const AppliedLeave()),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
+                  ),
+                  _buildDrawerItem(
+                    icon: FontAwesomeIcons.sackDollar,
+                    title: "Expense",
+                    onTap: () => Get.to(() => const Expenses()),
+                  ),
+                  _buildDrawerItem(
+                    icon: FontAwesomeIcons.questionCircle,
+                    title: "Payroll",
+                    onTap: () => Get.to(() => const PayrollScreen()),
+                  ),
+                  _buildDrawerItem(
+                    icon: FontAwesomeIcons.list,
+                    title: "Learning",
+                    onTap: () => Get.to(() => LearningScreen()),
+                  ),
+                  _buildDrawerItem(
+                    icon: FontAwesomeIcons.addressCard,
+                    title: "About Us",
+                    onTap: () => Get.to(() => const AboutUs()),
                   ),
                 ],
               ),
             ),
-            const Divider(color: Colors.white70, height: 0, indent: 20, endIndent: 20),
-            // List of navigation items
-            _buildDrawerItem(
-              icon: FontAwesomeIcons.houseChimneyUser,
-              title: "Home",
-              onTap: () => Navigator.pop(context),
-            ),
-            _buildDrawerItem(
-              icon: FontAwesomeIcons.idCard,
-              title: "Profile",
-              onTap: () => Get.to(() => const ProfileScreen()),
-            ),
-            _buildDrawerItem(
-              icon: FontAwesomeIcons.sackDollar,
-              title: "Expense",
-              onTap: () => Get.to(() => const Expenses()),
-            ),
-            _buildDrawerItem(
-              icon: FontAwesomeIcons.personWalkingArrowRight,
-              title: "Apply for Leave",
-              onTap: () => Get.to(() => const LeaveApplication()),
-            ),
-            _buildDrawerItem(
-              icon: FontAwesomeIcons.list,
-              title: "Leave Request History",
-              onTap: () => Get.to(() => const AppliedLeave()),
-            ),
-            _buildDrawerItem(
-              icon: FontAwesomeIcons.list,
-              title: "Learning",
-              onTap: () => Get.to(() => LearningScreen()),
-            ),
-            _buildDrawerItem(
-              icon: FontAwesomeIcons.calendarDay,
-              title: "Attendance",
-              onTap: () => Get.to(() => const Calender()),
-            ),
-            // Additional items
-            _buildDrawerItem(
-              icon: FontAwesomeIcons.addressCard,
-              title: "About Us",
-              onTap: () => Get.to(() => const AboutUs()),
-            ),
-            _buildDrawerItem(
-              icon: FontAwesomeIcons.handshakeAngle,
-              title: "Help",
-              onTap: () => Get.to(() => SupportScreen()),
-            ),
-            ListTile(
-              leading: const Icon(Icons.logout, color: Colors.white, size: 20),
-              title: const Text(
-                "Logout",
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              trailing: const Icon(
-                Icons.arrow_forward_ios,
-                size: 14,
-                color: Colors.white,
-              ),
-              // on onTap event, show a dialog box to confirm logout that shoild look more professional and attractive
-              onTap: () => Get.defaultDialog(
-                title: "Are you sure you want to logout?",
-                middleText: "Tap on confirm to logout or cancel to go back",
-                onCancel: () => Get.back(),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                titlePadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
-                middleTextStyle: const TextStyle(fontSize: 14, color: Colors.black),
-                titleStyle: const TextStyle(fontSize: 16, color: Colors.black, fontWeight: FontWeight.bold),
-                radius: 10,
-                buttonColor: Colors.blue.shade900,
-                backgroundColor: Colors.white,
-                onConfirm: () => AuthLogin.logout(),
-                confirmTextColor: Colors.white,
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 16),
+            child: Text(
+              "All rights reserved | Act T Connect Pvt. Ltd.",
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.white70,
+                fontFamily: GoogleFonts.arimo().fontFamily,
+                fontWeight: FontWeight.normal,
               ),
             ),
-        
-            // Footer with "All Rights Reserved" text
-            Padding(
-              padding: const EdgeInsets.only(top: 20, bottom: 10),
-              child: Align(
-                alignment: Alignment.bottomCenter,
-                child: Text(
-                  "All rights reserved | Act T Connect Pvt. Ltd.",
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.white70,
-                    fontFamily: GoogleFonts.arimo().fontFamily,
-                    fontWeight: FontWeight.normal,
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 
-// A helper method to generate each ListTile
   Widget _buildDrawerItem({
     required IconData icon,
     required String title,
@@ -619,6 +586,37 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  Widget _buildDrawerSubItem({
+    required String title,
+    required IconData icon,
+    required Function onTap,
+  }) {
+    return ListTile(
+      contentPadding: EdgeInsets.symmetric(horizontal: 32, vertical: 0),
+      minLeadingWidth: 20,
+      leading: Icon(
+        icon,
+        color: Colors.white70,
+        size: 16,
+      ),
+      title: Text(
+        title,
+        style: TextStyle(
+          color: Colors.white70,
+          fontSize: 13,
+          fontWeight: FontWeight.w400,
+        ),
+      ),
+      trailing: Icon(
+        Icons.arrow_forward_ios,
+        size: 12,
+        color: Colors.white70,
+      ),
+      onTap: () => onTap(),
+      dense: true,
+    );
+  }
+
   Widget buildTime() {
     return Container(
       height: screenHeight / 5,
@@ -637,19 +635,19 @@ class _HomeScreenState extends State<HomeScreen> {
             Column(
               children: [
                 const SizedBox(height: 20),
-                const Icon(
+                 Icon(
                   Icons.calendar_month,
                   size: 45,
-                  color: Colors.blue,
+                  color: Colors.blue.shade900,
                 ),
                 Text("Absences in this month", style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
                   color: Colors.black,
                 ), textAlign: TextAlign.center),
                 Text("No Leave is Available", style: TextStyle(
                   fontSize: 12,
-                  fontWeight: FontWeight.w500,
+                  fontWeight: FontWeight.bold,
                   color: Colors.black45,
                 ), textAlign: TextAlign.center,
                 ),
@@ -664,7 +662,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     height: 30,
                     width: screenWidth / 3,
                     decoration: BoxDecoration(
-                      color: Colors.greenAccent.shade700,
+                      color: Colors.blue.shade900,
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Row(
@@ -689,7 +687,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     height: 30,
                     width: screenWidth / 3,
                     decoration: BoxDecoration(
-                      color: Colors.red.shade500,
+                      color: Colors.blue.shade900,
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Row(
@@ -714,7 +712,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     height: 30,
                     width: screenWidth / 3,
                     decoration: BoxDecoration(
-                      color: Colors.yellow.shade700,
+                      color: Colors.blue.shade900,
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Row(
@@ -750,7 +748,6 @@ class _HomeScreenState extends State<HomeScreen> {
       var data = jsonDecode(response.body.toString());
       return EventsData.fromJson(data);
     }
-
     return SizedBox(
       height: screenHeight / 5,
       child: FutureBuilder<EventsData>(
@@ -767,7 +764,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 return buildNewsList(snapshot, index);
               },
               options: CarouselOptions(
-                height: screenHeight / 6,
+                height: screenHeight / 5,
                 autoPlay: true,
                 autoPlayInterval: Duration(seconds: 3),
                 enlargeCenterPage: true,
@@ -798,7 +795,7 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
-            const Padding(
+            Padding(
               padding: EdgeInsets.symmetric(horizontal: 10,),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -806,46 +803,80 @@ class _HomeScreenState extends State<HomeScreen> {
                   Icon(
                     FontAwesomeIcons.newspaper,
                     size: 45,
-                    color: Colors.blue,
+                    color: Colors.blue.shade900,
                   ),
                 ],
               ),
             ),
-            // Wrap the Column in a SingleChildScrollView
-            SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 0,vertical: 15),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      snapshot.data!.data![index].title.toString(),
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.black,
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 10),
-                      child: Container(
-                        width: screenWidth / 1.5,
-                        child: Text(
-                          snapshot.data!.data![index].des.toString(),
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Colors.black45,
-                          ),
-                          textAlign: TextAlign.center,
+            Flexible(
+              child: SingleChildScrollView(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 0,vertical: 15),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        snapshot.data!.data![index].title.toString(),
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black,
                         ),
                       ),
-                    ),
-                  ],
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 10),
+                        child: Container(
+                          width: screenWidth / 1.5,
+                          child: Text(
+                            snapshot.data!.data![index].des.toString(),
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.black45,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget buildSection({required String title, required Widget child}) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(10),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black12,
+            blurRadius: 4,
+            offset: Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(left: 12, top: 12),
+            child: Text(
+              title,
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Colors.black,
+              ),
+            ),
+          ),
+          child,
+        ],
       ),
     );
   }

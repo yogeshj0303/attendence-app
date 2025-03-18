@@ -1,3 +1,4 @@
+import 'package:employeeattendance/HomePage/main_screen.dart';
 import 'package:flutter/material.dart';
 
 class PayrollScreen extends StatelessWidget {
@@ -10,10 +11,17 @@ class PayrollScreen extends StatelessWidget {
       child: Scaffold(
         backgroundColor: Colors.white,
         appBar: AppBar(
-          backgroundColor: Colors.white,
+          backgroundColor: Colors.blue.shade900,
+          foregroundColor: Colors.white,
+          leading: IconButton(
+            onPressed: () {
+              Navigator.push(context, MaterialPageRoute(builder: (context) => MainScreen()));
+            },
+            icon: Icon(Icons.arrow_back_ios, color: Colors.white, size: 20),
+          ),
           elevation: 0,
           centerTitle: true,
-          title: Text('Payroll', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black54)),
+          title: Text('Payroll', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
           bottom: TabBar(
             dividerHeight: 0,
             overlayColor: MaterialStateProperty.all(Colors.transparent),
@@ -21,15 +29,17 @@ class PayrollScreen extends StatelessWidget {
               Tab(text: 'Payroll Structure'),
               Tab(text: 'Download Payslip'),
             ],
-            indicator: BoxDecoration(
-              borderRadius: BorderRadius.circular(50),
-              color: Colors.blue.shade900,
+            indicator: UnderlineTabIndicator(
+              borderSide: BorderSide(width: 2.0, color: Colors.white),
+              insets: EdgeInsets.symmetric(horizontal: 24.0),
             ),
-            indicatorSize: TabBarIndicatorSize.tab,
+            indicatorSize: TabBarIndicatorSize.label,
             labelColor: Colors.white,
-            unselectedLabelColor: Colors.black,
-            labelPadding: EdgeInsets.symmetric(horizontal: 15.0),
-            indicatorPadding: EdgeInsets.all(3.0),
+            unselectedLabelColor: Colors.white.withOpacity(0.6),
+            labelStyle: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+            unselectedLabelStyle: TextStyle(fontSize: 15),
+            labelPadding: EdgeInsets.symmetric(horizontal: 25.0),
+            indicatorPadding: EdgeInsets.symmetric(horizontal:4,vertical: 4),
           ),
         ),
         body: TabBarView(
@@ -57,7 +67,7 @@ class PayrollScreen extends StatelessWidget {
                 padding: const EdgeInsets.all(12.0),
                 child: Column(
                   children: [
-                    Text('Net Salary(KYD)', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white)),
+                    Text('Net Salary', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white)),
                     SizedBox(height: 8),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -89,7 +99,7 @@ class PayrollScreen extends StatelessWidget {
               _buildRow('Total', '233.5'),
             ]),
             Divider(),
-            _buildSection('Net Salary (KYD)', [
+            _buildSection('Net Salary', [
               _buildRow('Gross Earning', '3000'),
               _buildRow('Total Deduction', '233.5'),
               _buildRow('Net Amount', '2766.5'),

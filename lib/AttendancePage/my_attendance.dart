@@ -1,9 +1,10 @@
+import 'package:employeeattendance/HomePage/main_screen.dart';
 import 'package:employeeattendance/controller/globalvariable.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:carousel_slider/carousel_slider.dart';
 
 class MyAttendancePage extends StatefulWidget {
   @override
@@ -15,17 +16,32 @@ class _MyAttendancePageState extends State<MyAttendancePage> {
   List<dynamic> _attendanceData = [];
   String? _Id;
   DateTime? _selectedDate;
+  final ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
     super.initState();
     _selectedDate = DateTime.now();
     _loadId();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _scrollToCurrentDate();
+    });
+  }
+
+  void _scrollToCurrentDate() {
+    if (_selectedDate != null) {
+      int dayIndex = _selectedDate!.day - 1;
+      _scrollController.animateTo(
+        64.0 * (dayIndex), // 60 width + 4 margin
+        duration: Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+    }
   }
 
   Future<void> _loadId() async {
     setState(() {
-      _Id = GlobalVariable.uid.toString(); // Default to '113' if not found
+      _Id = GlobalVariable.uid.toString(); 
       print(_Id);
     });
     _fetchAttendanceData();
@@ -39,6 +55,7 @@ class _MyAttendancePageState extends State<MyAttendancePage> {
     print(response.body);
     if (response.statusCode == 200 || response.statusCode == 201) {
       final data = jsonDecode(response.body);
+      print(data);
       if (data['status'] == true) {
         setState(() {
           _attendanceData = data['data'];
@@ -80,25 +97,36 @@ class _MyAttendancePageState extends State<MyAttendancePage> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back_ios, color: Colors.white, size: 20),
+          onPressed: () => Navigator.pop(context),
+        ),
         automaticallyImplyLeading: false,
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black54,
-        title: Text('My Attendance', style: TextStyle(color: Colors.black54, fontWeight: FontWeight.bold)),
+        backgroundColor: Colors.blue.shade900,
+        title: Text('My Attendance', 
+          style: TextStyle(
+            color: Colors.white, 
+            fontWeight: FontWeight.w600,
+            fontSize: 18
+          )
+        ),
         elevation: 0,
         centerTitle: true,
         actions: [
           IconButton(
-            icon: Icon(Icons.calendar_today),
+            icon: Icon(Icons.calendar_month_outlined, color: Colors.white, size: 24),
             onPressed: () => _selectDateFromCalendar(DateTime.now()),
           ),
         ],
       ),
-      body: Column(
-        children: [
-          _buildCalendar(),
-          _buildDetailsCard(),
-          _buildSummaryRow(),
-        ],
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            _buildCalendar(),
+            _buildDetailsCard(),
+            _buildSummaryRow(),
+          ],
+        ),
       ),
     );
   }
@@ -108,62 +136,121 @@ class _MyAttendancePageState extends State<MyAttendancePage> {
     DateTime today = DateTime.now();
 
     return Container(
-      padding: EdgeInsets.symmetric(vertical: 16.0),
+      clipBehavior: Clip.none,
+      padding: EdgeInsets.all(16),
       child: Column(
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              IconButton(
-                icon: Icon(Icons.arrow_back_ios, color: Colors.black54),
-                onPressed: _decrementMonth,
-              ),
-              Text(
-                DateFormat('MMM yyyy').format(_currentMonth),
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-              ),
-              IconButton(
-                icon: Icon(Icons.arrow_forward_ios, color: Colors.black54),
-                onPressed: _incrementMonth,
-              ),
-            ],
+          CarouselSlider(
+            options: CarouselOptions(
+              clipBehavior: Clip.none,
+              height: 50,
+              initialPage: _currentMonth.month - 1,
+              enableInfiniteScroll: false,
+              onPageChanged: (index, reason) {
+                setState(() {
+                  _currentMonth = DateTime(_currentMonth.year, index + 1);
+                  _selectedDate = _currentMonth.month == today.month && _currentMonth.year == today.year
+                      ? today
+                      : DateTime(_currentMonth.year, _currentMonth.month, 1);
+                });
+              },
+              viewportFraction: 0.4,
+            ),
+            items: List.generate(12, (index) {
+              DateTime month = DateTime(_currentMonth.year, index + 1, 1);
+              return GestureDetector(
+                onTap: () {
+                  setState(() {
+                    _currentMonth = DateTime(_currentMonth.year, month.month);
+                    _selectedDate = _currentMonth.month == today.month && _currentMonth.year == today.year
+                        ? today
+                        : DateTime(_currentMonth.year, _currentMonth.month, 1);
+                  });
+                },
+                child: Container(
+                  clipBehavior: Clip.none,
+                  width: MediaQuery.of(context).size.width,
+                  margin: EdgeInsets.symmetric(horizontal: 5.0),
+                  decoration: BoxDecoration(
+                    color: _currentMonth.month == month.month ? Colors.blue.shade900 : Colors.transparent,
+                    border: Border.all(
+                      color: Colors.grey.shade300,
+                      width: 1,
+                    ),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Center(
+                    child: Text(
+                      DateFormat('MMMM yyyy').format(month),
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: _currentMonth.month == month.month ? Colors.white : Colors.blue.shade900,
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            }),
           ),
-          SizedBox(height: 8),
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              children: monthDates.map((date) {
-                bool isToday = date.year == today.year && date.month == today.month && date.day == today.day;
-                bool isSelected = _selectedDate != null && date.year == _selectedDate!.year && date.month == _selectedDate!.month && date.day == _selectedDate!.day;
+          Container(
+            height: 100,
+            child: ListView.builder(
+              clipBehavior: Clip.none,
+              controller: _scrollController,
+              scrollDirection: Axis.horizontal,
+              itemCount: monthDates.length,
+              itemBuilder: (context, index) {
+                DateTime date = monthDates[index];
+                bool isToday = date.year == today.year && 
+                              date.month == today.month && 
+                              date.day == today.day;
+                bool isSelected = _selectedDate != null && 
+                                date.year == _selectedDate!.year && 
+                                date.month == _selectedDate!.month && 
+                                date.day == _selectedDate!.day;
+                
                 return GestureDetector(
                   onTap: () => _selectDateFromCalendar(date),
                   child: Container(
-                    margin: EdgeInsets.symmetric(horizontal: 4.0),
+                    clipBehavior: Clip.none,
+                    width: 60,
+                    margin: EdgeInsets.symmetric(horizontal: 4, vertical: 8),
                     decoration: BoxDecoration(
-                      color: isSelected ? Colors.blue.shade100 : null,
-                      border: isToday ? Border.all(color: Colors.blue, width: 2) : null,
-                      borderRadius: BorderRadius.circular(8),
+                      color: isSelected ? Colors.blue.shade900 : 
+                             isToday ? Colors.blue.shade50 : Colors.transparent,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: isSelected ? Colors.blue.shade900 : Colors.grey.shade300,
+                        width: 1,
+                      ),
                     ),
-                    padding: EdgeInsets.all(4),
                     child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Text(DateFormat('yyyy').format(date), style: TextStyle(fontSize: 12, color: Colors.black54)),
-                        Text('${date.day}', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                        Text(DateFormat('EEE').format(date).toUpperCase(), style: TextStyle(fontSize: 12, color: Colors.black54)),
+                        Text(
+                          DateFormat('EEE').format(date).toUpperCase(),
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                            color: isSelected ? Colors.white : Colors.grey.shade600,
+                          ),
+                        ),
+                        SizedBox(height: 8),
+                        Text(
+                          '${date.day}',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: isSelected ? Colors.white : 
+                                  isToday ? Colors.blue.shade900 : Colors.black87,
+                          ),
+                        ),
                       ],
                     ),
                   ),
                 );
-              }).toList(),
-            ),
-          ),
-          SizedBox(height: 16),
-          ElevatedButton(
-            onPressed: () {},
-            child: Text('Regularization', style: TextStyle(color: Colors.white)),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.blue.shade900,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+              },
             ),
           ),
         ],
@@ -173,34 +260,73 @@ class _MyAttendancePageState extends State<MyAttendancePage> {
 
   Widget _buildDetailsCard() {
     if (_attendanceData.isEmpty) {
-      return Center(child: CircularProgressIndicator());
+      return Center(
+        child: CircularProgressIndicator(
+          valueColor: AlwaysStoppedAnimation<Color>(Colors.blue.shade900),
+        ),
+      );
     }
 
-    final selectedDateStr = _selectedDate != null ? DateFormat('dd MMMM yyyy').format(_selectedDate!) : null;
+    final selectedDateStr = _selectedDate != null ? 
+        DateFormat('dd MMMM yyyy').format(_selectedDate!) : null;
     final attendance = _attendanceData.firstWhere(
       (record) => record['date'] == selectedDateStr,
       orElse: () => null,
     );
 
     if (attendance == null) {
-      return Center(child: Text('No attendance data for selected date'));
+      return Center(
+        child: Padding(
+          padding: EdgeInsets.all(16),
+          child: Column(
+            children: [
+              Icon(Icons.event_busy_outlined, 
+                size: 48, 
+                color: Colors.grey.shade400
+              ),
+              SizedBox(height: 16),
+              Text(
+                'No attendance data for selected date',
+                style: TextStyle(
+                  color: Colors.grey.shade600,
+                  fontSize: 16,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
     }
 
-    return Card(
-      color: Colors.white,
-      elevation: 2,
-      margin: EdgeInsets.symmetric(horizontal: 16.0),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.0)),
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: 16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: Offset(0, 2),
+          ),
+        ],
+      ),
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 16.0),
+        padding: EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            Text(
+              'Attendance Details',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+                color: Colors.blue.shade900,
+              ),
+            ),
+            SizedBox(height: 16),
             _buildDetailRow('Date', attendance['date']),
-            // _buildDetailRow('Shift', attendance['work_status'] ?? 'N/A'),
-            _buildDetailRow('In Date', attendance['date']),
             _buildDetailRow('In Time', attendance['checkin']),
-            _buildDetailRow('Out Date', attendance['date']),
             _buildDetailRow('Out Time', attendance['checkout'] ?? '--:--'),
             _buildDetailRow('Status', attendance['work_status'] ?? 'Unknown'),
           ],
@@ -210,65 +336,120 @@ class _MyAttendancePageState extends State<MyAttendancePage> {
   }
 
   Widget _buildDetailRow(String label, String value) {
-    Color textColor = Colors.black54; // Default color
-
+    Color statusColor = Colors.black87;
     if (label == 'Status') {
-      if (value.toLowerCase() == 'present') {
-        textColor = Colors.green;
-      } else if (value.toLowerCase() == 'absent') {
-        textColor = Colors.red;
-      } else if (value.toLowerCase() == 'half day') {
-        textColor = Colors.orange;
+      switch(value.toLowerCase()) {
+        case 'present':
+          statusColor = Colors.green.shade600;
+          break;
+        case 'absent':
+          statusColor = Colors.red.shade600;
+          break;
+        case 'half day':
+          statusColor = Colors.orange.shade600;
+          break;
       }
     }
 
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4.0),
+      padding: EdgeInsets.symmetric(vertical: 8),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: TextStyle(fontSize: 14, color: Colors.black54)),
-          Text(value, style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: textColor)),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 15,
+              color: Colors.grey.shade600,
+            ),
+          ),
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.w600,
+              color: label == 'Status' ? statusColor : Colors.black87,
+            ),
+          ),
         ],
       ),
     );
   }
 
   Widget _buildSummaryRow() {
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    return Container(
+      margin: EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildSummaryItem('30', 'Total Days', Icons.calendar_today),
-          _buildSummaryItem('24', 'Working Days', Icons.work),
-          _buildSummaryItem('5', 'Week Off', Icons.weekend),
-          _buildSummaryItem('1', 'Holiday', Icons.beach_access),
-          _buildSummaryItem('11.5', 'No Pay Days', Icons.money_off),
-          _buildSummaryItem('0', 'Leave Days', Icons.airline_seat_flat),
+          Text(
+            'Monthly Summary',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Colors.indigo,
+            ),
+          ),
+          SizedBox(height: 12),
+          GridView.count(
+            shrinkWrap: true,
+            physics: NeverScrollableScrollPhysics(),
+            crossAxisCount: 2,
+            mainAxisSpacing: 12,
+            crossAxisSpacing: 12,
+            childAspectRatio: 2,
+            children: [
+              _buildSummaryItem('24', 'Working Days', Icons.work_outline, Colors.green.shade600),
+              _buildSummaryItem('0', 'Half Days', Icons.hourglass_bottom_outlined, Colors.orange.shade600),
+              _buildSummaryItem('0', 'Leave Days', Icons.event_busy_outlined, Colors.red.shade600),
+              _buildSummaryItem('1', 'Holiday', Icons.celebration_outlined, Colors.blue.shade600),
+            ],
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildSummaryItem(String value, String label, IconData icon) {
-    return Expanded(
-      child: SizedBox(
-        width: 100,
-        height: 120,
-        child: Card(
-          color: Colors.white,
-          elevation: 2,
-          child: Column(
+  Widget _buildSummaryItem(String value, String label, IconData icon, Color iconColor) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 8,
+            offset: Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(icon, color: iconColor, size: 24),
+          SizedBox(width: 8),
+          Column(
             mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Icon(icon, color: Colors.blue.shade900, size: 24),
-              SizedBox(height: 4),
-              Text(value, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-              Text(label, textAlign: TextAlign.center, style: TextStyle(fontSize: 12, color: Colors.black54)),
+              Text(
+                value,
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.indigo,
+                ),
+              ),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Colors.grey.shade600,
+                ),
+              ),
             ],
           ),
-        ),
+        ],
       ),
     );
   }

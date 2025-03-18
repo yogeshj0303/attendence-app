@@ -56,6 +56,7 @@ dependencies:
   iconly: ^1.0.1
   carousel_slider: ^5.0.0
   animated_icon: ^0.0.6
+  flutter_staggered_animations: ^1.1.1
 
 dev_dependencies:
   flutter_test:

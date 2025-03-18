@@ -1,4 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:employeeattendance/DrawerPage/help.dart';
+import 'package:employeeattendance/HomePage/main_screen.dart';
 import 'package:employeeattendance/ProfilePages/downloads.dart';
 import 'package:employeeattendance/ProfilePages/familydetails.dart';
 import 'package:employeeattendance/ProfilePages/personaldetails.dart';
@@ -32,15 +34,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
     ));
 
     return Scaffold(
-      backgroundColor: Colors.grey[100],
+      backgroundColor: Colors.white,
       appBar: AppBar(
         centerTitle: true,
         automaticallyImplyLeading: false,
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black87,
+        backgroundColor: Colors.blue.shade900,
+        foregroundColor: Colors.white,
+        leading: IconButton(
+          onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const MainScreen())),
+          icon: const Icon(Icons.arrow_back_ios, color: Colors.white, size: 20),
+        ),
         title: const Text(
           "Profile",
-          style: TextStyle(color: Colors.black54, fontWeight: FontWeight.bold, fontSize: 20),
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18),
         ),
         elevation: 1,
       ),
@@ -121,31 +127,32 @@ class _ProfileScreenState extends State<ProfileScreen> {
             const SizedBox(height: 20),
             buildTile("Upload", FontAwesomeIcons.upload, () => Get.to(() => const UploadDocuments())),
             buildTile("Downloads", FontAwesomeIcons.download, () => Get.to(() => const Downloads())),
+            buildTile("Help", FontAwesomeIcons.questionCircle, () => Get.to(() => const SupportScreen())),
             buildTile(
               "Logout",
               FontAwesomeIcons.powerOff,
               () => Get.defaultDialog(
                 title: "Logout?",
                 middleText: "Confirm to logout or cancel.",
-                onCancel: () => Get.back(),
+                onCancel: () => Navigator.pop(context),
                 onConfirm: () => AuthLogin.logout(),
                 confirmTextColor: Colors.white,
               ),
             ),
-            buildTile(
-              "Delete",
-              FontAwesomeIcons.trashAlt,
-              () => Get.defaultDialog(
-                title: "Delete Account?",
-                middleText: "This action is permanent.",
-                onCancel: () => Get.back(),
-                onConfirm: () {
-                  // Add delete account functionality here
-                },
-                confirmTextColor: Colors.white,
-              ),
-              textColor: Colors.red,
-            ),
+            // buildTile(
+            //   "Help",
+            //   FontAwesomeIcons.questionCircle,
+            //   () => Get.defaultDialog(
+            //     title: "Help?",
+            //     middleText: "This action is permanent.",
+            //     onCancel: () => Navigator.pop(context),
+            //     onConfirm: () {
+            //       Get.to(() => const HelpScreen());
+            //     },
+            //     confirmTextColor: Colors.white,
+            //   ),
+            //   textColor: Colors.red,
+            // ),
             const SizedBox(height: 30),
           ],
         ),
@@ -153,7 +160,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       bottomSheet: const Padding(
         padding: EdgeInsets.symmetric(vertical: 8, horizontal: 20),
         child: Text(
-          "All Rights Reserved  |  Act-T Connect Pvt. Ltd.",
+          "All Rights Reserved  |  Act T Connect Pvt. Ltd.",
           style: TextStyle(color: Colors.black54),
           textAlign: TextAlign.center,
         ),

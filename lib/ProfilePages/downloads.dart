@@ -68,11 +68,15 @@ class _DownloadsState extends State<Downloads> {
     return Scaffold(
       backgroundColor: Colors.grey.shade100,
       appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios, color: Colors.white, size: 20),
+          onPressed: () => Get.back(),
+        ),
         centerTitle: true,
-        title: const Text("Downloads", style: TextStyle(color: Colors.black87)),
+        title: const Text("Downloads", style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
         elevation: 1,
-        backgroundColor: Colors.white,
-        iconTheme: const IconThemeData(color: Colors.black54),
+        backgroundColor: Colors.blue.shade900,
+        iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: Center(
         child: Column(
