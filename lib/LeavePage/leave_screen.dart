@@ -1,3 +1,4 @@
+import 'package:employeeattendance/DrawerPage/appliedleave.dart';
 import 'package:employeeattendance/DrawerPage/leaveapplication.dart';
 import 'package:employeeattendance/HomePage/main_screen.dart';
 import 'package:employeeattendance/api_services.dart';
@@ -135,7 +136,7 @@ class _AutoLeaveScreenState extends State<AutoLeaveScreen> {
                   onPressed: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => LeaveHistoryScreen()),
+                      MaterialPageRoute(builder: (context) => AppliedLeave()),
                     );
                   },
                   icon: Icon(Icons.history, color: Colors.white),

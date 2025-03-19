@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:intl/intl.dart';
 
 class SupportScreen extends StatefulWidget {
   const SupportScreen({super.key});
@@ -29,6 +30,18 @@ class _SupportScreenState extends State<SupportScreen> {
             Navigator.pop(context);
           },
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.calendar_today, color: Colors.white),
+            onPressed: () {
+              final now = DateTime.now();
+              final formattedDate = DateFormat('MMMM dd, yyyy').format(now);
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Today is $formattedDate')),
+              );
+            },
+          ),
+        ],
       ),
       backgroundColor: Colors.white,
       body: SafeArea(

@@ -1,3 +1,4 @@
+import 'package:employeeattendance/DrawerPage/view_attendance.dart';
 import 'package:employeeattendance/HomePage/main_screen.dart';
 import 'package:employeeattendance/controller/globalvariable.dart';
 import 'package:flutter/material.dart';
@@ -89,6 +90,7 @@ class _MyAttendancePageState extends State<MyAttendancePage> {
   void _selectDateFromCalendar(DateTime date) {
     setState(() {
       _selectedDate = date;
+      _currentMonth = DateTime(date.year, date.month);
     });
   }
 
@@ -115,7 +117,10 @@ class _MyAttendancePageState extends State<MyAttendancePage> {
         actions: [
           IconButton(
             icon: Icon(Icons.calendar_month_outlined, color: Colors.white, size: 24),
-            onPressed: () => _selectDateFromCalendar(DateTime.now()),
+            // onPressed: () => _selectDateFromCalendar(DateTime.now()),
+            onPressed: () {
+              Navigator.push(context, MaterialPageRoute(builder: (context) => ViewAttendance()));
+            }
           ),
         ],
       ),
