@@ -133,18 +133,20 @@ class _LeaveApplicationState extends State<LeaveApplication> {
                           ),
                           filled: true,
                           fillColor: Colors.white,
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                          contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 16),
                         ),
                         value: selectedValue,
                         items: leaveType
                             .map((item) => DropdownMenuItem<String>(
                                 value: item,
-                                child: Text(item, 
-                                  style: TextStyle(
-                                    fontSize: 15,
-                                    color: item == '-----' ? Colors.grey : Colors.black87,
-                                  )
-                                )))
+                                child: Text(item,
+                                    style: TextStyle(
+                                      fontSize: 15,
+                                      color: item == '-----'
+                                          ? Colors.grey
+                                          : Colors.black87,
+                                    ))))
                             .toList(),
                         onChanged: ((value) => setState(() {
                               selectedValue = value!;
@@ -199,7 +201,8 @@ class _LeaveApplicationState extends State<LeaveApplication> {
                             children: [
                               _buildSectionTitle("From"),
                               const SizedBox(height: 8),
-                              _buildDateField(fromDateController, context, true),
+                              _buildDateField(
+                                  fromDateController, context, true),
                             ],
                           ),
                         ),
@@ -274,7 +277,8 @@ class _LeaveApplicationState extends State<LeaveApplication> {
     );
   }
 
-  Widget _buildDateField(TextEditingController controller, BuildContext context, bool isFromDate) {
+  Widget _buildDateField(
+      TextEditingController controller, BuildContext context, bool isFromDate) {
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12),
@@ -292,23 +296,27 @@ class _LeaveApplicationState extends State<LeaveApplication> {
         readOnly: true,
         onTap: () async {
           DateTime initialDate = DateTime.now();
-          
+
           DateTime? pickedDate = await showDatePicker(
             context: context,
             initialDate: initialDate,
-            firstDate: isFromDate ? DateTime.now() : 
-                      fromDateController.text.isNotEmpty ? 
-                      DateFormat("dd-MMM-yyyy").parse(fromDateController.text) : 
-                      DateTime.now(),
-            lastDate: DateTime(2025),
+            firstDate: isFromDate
+                ? DateTime.now()
+                : fromDateController.text.isNotEmpty
+                    ? DateFormat("dd-MMM-yyyy").parse(fromDateController.text)
+                    : DateTime.now(),
+            lastDate: DateTime(2050),
             initialEntryMode: DatePickerEntryMode.calendarOnly,
             selectableDayPredicate: (DateTime date) {
               if (isFromDate && toDateController.text.isNotEmpty) {
-                final toDate = DateFormat("dd-MMM-yyyy").parse(toDateController.text);
+                final toDate =
+                    DateFormat("dd-MMM-yyyy").parse(toDateController.text);
                 return date.isBefore(toDate) || date.isAtSameMomentAs(toDate);
               } else if (!isFromDate && fromDateController.text.isNotEmpty) {
-                final fromDate = DateFormat("dd-MMM-yyyy").parse(fromDateController.text);
-                return date.isAfter(fromDate) || date.isAtSameMomentAs(fromDate);
+                final fromDate =
+                    DateFormat("dd-MMM-yyyy").parse(fromDateController.text);
+                return date.isAfter(fromDate) ||
+                    date.isAtSameMomentAs(fromDate);
               }
               return true;
             },
@@ -332,13 +340,15 @@ class _LeaveApplicationState extends State<LeaveApplication> {
                       fontWeight: FontWeight.w600,
                       color: Colors.blue.shade900,
                     ),
-                    dayBackgroundColor: MaterialStateProperty.resolveWith((states) {
+                    dayBackgroundColor:
+                        MaterialStateProperty.resolveWith((states) {
                       if (states.contains(MaterialState.selected)) {
                         return Colors.blue.shade900;
                       }
                       return Colors.transparent;
                     }),
-                    dayForegroundColor: MaterialStateProperty.resolveWith((states) {
+                    dayForegroundColor:
+                        MaterialStateProperty.resolveWith((states) {
                       if (states.contains(MaterialState.selected)) {
                         return Colors.white;
                       }
@@ -347,7 +357,8 @@ class _LeaveApplicationState extends State<LeaveApplication> {
                       }
                       return Colors.black87;
                     }),
-                    todayBackgroundColor: MaterialStateProperty.resolveWith((states) {
+                    todayBackgroundColor:
+                        MaterialStateProperty.resolveWith((states) {
                       if (states.contains(MaterialState.selected)) {
                         return Colors.blue.shade900;
                       }
@@ -374,19 +385,21 @@ class _LeaveApplicationState extends State<LeaveApplication> {
               );
             },
           );
-          
+
           if (pickedDate != null) {
             String formattedDate = DateFormat("dd-MMM-yyyy").format(pickedDate);
             setState(() {
               controller.text = formattedDate;
-              
+
               if (isFromDate && toDateController.text.isNotEmpty) {
-                final toDate = DateFormat("dd-MMM-yyyy").parse(toDateController.text);
+                final toDate =
+                    DateFormat("dd-MMM-yyyy").parse(toDateController.text);
                 if (pickedDate.isAfter(toDate)) {
                   toDateController.clear();
                 }
               } else if (!isFromDate && fromDateController.text.isNotEmpty) {
-                final fromDate = DateFormat("dd-MMM-yyyy").parse(fromDateController.text);
+                final fromDate =
+                    DateFormat("dd-MMM-yyyy").parse(fromDateController.text);
                 if (pickedDate.isBefore(fromDate)) {
                   fromDateController.clear();
                 }
@@ -411,8 +424,10 @@ class _LeaveApplicationState extends State<LeaveApplication> {
           fillColor: Colors.white,
           hintText: "Select Date",
           hintStyle: TextStyle(color: Colors.grey[400]),
-          suffixIcon: Icon(Icons.calendar_today, size: 20, color: Colors.blue.shade900),
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+          suffixIcon:
+              Icon(Icons.calendar_today, size: 20, color: Colors.blue.shade900),
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         ),
       ),
     );
