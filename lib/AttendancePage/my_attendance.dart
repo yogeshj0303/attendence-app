@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 class MyAttendancePage extends StatefulWidget {
   @override
@@ -41,6 +42,11 @@ class _MyAttendancePageState extends State<MyAttendancePage> {
   }
 
   Future<void> _loadId() async {
+    if (GlobalVariable.uid == null) {
+      Fluttertoast.showToast(msg: 'User ID not available. Please login again.');
+      return;
+    }
+    
     setState(() {
       _Id = GlobalVariable.uid.toString(); 
       print(_Id);

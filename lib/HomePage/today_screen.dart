@@ -24,10 +24,37 @@ class _TodayScreenState extends State<TodayScreen> {
   Color primary = Colors.blue;
   bool isCheckedOut = false;
   bool isDone = false;
+  final LocationService _locationService = LocationService();
+  Timer? _locationTimer;
+
   @override
   void initState() {
-    const LocationPage();
     super.initState();
+    _initializeLocation();
+  }
+
+  Future<void> _initializeLocation() async {
+    try {
+      await _locationService.initialize();
+      
+      // Set up a timer to periodically check location status
+      _locationTimer = Timer.periodic(const Duration(seconds: 5), (timer) {
+        if (mounted) {
+          setState(() {
+            // This will trigger a rebuild to show updated location
+          });
+        }
+      });
+    } catch (e) {
+      print('Error initializing location in today screen: $e');
+      // Continue with the screen even if location fails
+    }
+  }
+
+  @override
+  void dispose() {
+    _locationTimer?.cancel();
+    super.dispose();
   }
 
   Future checkInTime(
@@ -259,6 +286,12 @@ class _TodayScreenState extends State<TodayScreen> {
                               fontFamily: GoogleFonts.poppins().fontFamily,
                             ),
                             onSubmit: () {
+                              if (GlobalVariable.uid == null) {
+                                Fluttertoast.showToast(
+                                    msg: 'User ID not available. Please login again.');
+                                return;
+                              }
+                              
                               int id = GlobalVariable.uid!;
                               if (GlobalVariable.checkInStatus == 0 &&
                                   GlobalVariable.location != '') {
@@ -307,11 +340,42 @@ class _TodayScreenState extends State<TodayScreen> {
               Container(
                 margin: const EdgeInsets.only(left: 15),
                 alignment: Alignment.center,
-                height: 35,
+                height: 50,
                 child: Column(
                   children: [
-                    const LocationPage(),
-                    Text(GlobalVariable.location),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Expanded(
+                          child: Text(
+                            _locationService.currentAddress,
+                            style: TextStyle(
+                              fontFamily: GoogleFonts.poppins().fontFamily,
+                              fontSize: 14,
+                              color: _locationService.isLocationAvailable ? Colors.black : Colors.red,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.refresh, size: 20),
+                          onPressed: () async {
+                            await _locationService.refreshLocation();
+                            setState(() {});
+                          },
+                        ),
+                      ],
+                    ),
+                    if (_locationService.currentError != null)
+                      Text(
+                        _locationService.currentError!,
+                        style: TextStyle(
+                          fontFamily: GoogleFonts.poppins().fontFamily,
+                          fontSize: 12,
+                          color: Colors.red,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
                   ],
                 ),
               ),

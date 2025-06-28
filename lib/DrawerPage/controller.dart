@@ -10,6 +10,11 @@ class CalController extends GetxController {
   RxList<CalModel> attnData = <CalModel>[].obs;
 
   Future<void> fetchAttendance() async {
+    if (GlobalVariable.uid == null) {
+      Fluttertoast.showToast(msg: 'User ID not available. Please login again.');
+      return;
+    }
+    
     final url = '${apiUrl}attendance?id=${GlobalVariable.uid}';
     isLoading.value = true;
     try {

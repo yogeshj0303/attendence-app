@@ -119,7 +119,7 @@ class _ExpensesState extends State<Expenses> {
         actions: [
           IconButton(
               onPressed: () => Get.to(() => ShowExpense()),
-              icon: const Icon(Icons.account_balance, color: Colors.white)),
+              icon: const Icon(Icons.receipt_long, color: Colors.white)),
         ],
       ),
       body: isLoading
@@ -146,6 +146,7 @@ class _ExpensesState extends State<Expenses> {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Expanded(
+                              flex: 2,
                               child: TextFormField(
                                 controller: dateController,
                                 validator: (value) => value!.isEmpty
@@ -173,20 +174,31 @@ class _ExpensesState extends State<Expenses> {
                               ),
                             ),
                             const SizedBox(width: 8),
-                            GestureDetector(
-                              onTap: () {
-                                pickImage();
-                              },
-                              child: Container(
-                                height: 50,
-                                width: 175,
-                                color: Colors.white,
-                                child: const Row(
-                                  children: [
-                                    Icon(Icons.upload),
-                                    SizedBox(width: 8),
-                                    Text('Upload bill (Optional)'),
-                                  ],
+                            Expanded(
+                              flex: 3,
+                              child: GestureDetector(
+                                onTap: () {
+                                  pickImage();
+                                },
+                                child: Container(
+                                  height: 50,
+                                  decoration: BoxDecoration(
+                                    border: Border.all(color: Colors.grey.shade300),
+                                    borderRadius: BorderRadius.circular(4),
+                                  ),
+                                  child: const Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(Icons.upload),
+                                      SizedBox(width: 8),
+                                      Flexible(
+                                        child: Text(
+                                          'Upload bill (Optional)',
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ),
                             ),

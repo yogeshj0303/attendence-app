@@ -16,6 +16,10 @@ class Calender extends StatefulWidget {
 
 class _CalenderState extends State<Calender> {
   Future<CalenderModel> getData() async {
+    if (GlobalVariable.uid == null) {
+      throw Exception('User ID not available. Please login again.');
+    }
+    
     final url = '${apiUrl}attendance?id=${GlobalVariable.uid}';
     var response = await http.post(Uri.parse(url));
     var data = jsonDecode(response.body.toString());
@@ -45,6 +49,30 @@ class _CalenderState extends State<Calender> {
       body: FutureBuilder<CalenderModel>(
           future: getData(),
           builder: (context, snapshot) {
+            if (snapshot.hasError) {
+              return Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.error_outline, size: 64, color: Colors.red),
+                    SizedBox(height: 16),
+                    Text(
+                      'Error: ${snapshot.error}',
+                      style: TextStyle(fontSize: 16, color: Colors.red),
+                      textAlign: TextAlign.center,
+                    ),
+                    SizedBox(height: 16),
+                    ElevatedButton(
+                      onPressed: () {
+                        setState(() {}); // Retry
+                      },
+                      child: Text('Retry'),
+                    ),
+                  ],
+                ),
+              );
+            }
+            
             return Column(
               children: [
                 Expanded(

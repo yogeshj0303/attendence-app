@@ -64,9 +64,11 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   bool isAccepted = false;
+  bool _obscurePassword = true;
   double screenHeight = 0;
   double screenWidth = 0;
-  Color primary = Colors.blue;
+  Color primary = const Color(0xFF2563EB);
+  Color secondary = const Color(0xFF64748B);
   TextEditingController empIdController = TextEditingController();
   TextEditingController passController = TextEditingController();
 
@@ -75,245 +77,380 @@ class _LoginScreenState extends State<LoginScreen> {
     screenHeight = MediaQuery.of(context).size.height;
     screenWidth = MediaQuery.of(context).size.width;
     final Uri url = Uri.parse('http://pinghr.in/privacy-policy');
+    
     return Scaffold(
-      // resizeToAvoidBottomInset: true,
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            Container(
-              margin: const EdgeInsets.only(top: 36,right: 6, left: 6),
-              height: screenHeight / 4,
-              width: screenWidth,
-              decoration: BoxDecoration(
-                color: Colors.blue[50],
-                borderRadius:
-                    const BorderRadius.all(Radius.circular(40)),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(22.0),
-                child: Center(
-                    child: Image.asset(
-                  'assets/images/logo.png',
-                )),
-              ),
+      backgroundColor: const Color(0xFFF8FAFC),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              minHeight: screenHeight - MediaQuery.of(context).padding.top - MediaQuery.of(context).padding.bottom,
             ),
-            Container(
-              margin: EdgeInsets.only(
-                top: screenHeight / 20,
-                bottom: screenHeight / 20,
-              ),
-              child: Text(
-                "Login",
-                style: AppTextStyles.heading,
-              ),
-            ),
-            Container(
-              margin: EdgeInsets.symmetric(horizontal: screenWidth / 22),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24.0),
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Padding(
-                    padding: const EdgeInsets.only(left: 12),
-                    child: Text(
-                      "Employee ID",
-                      style: AppTextStyles.bodyText,
-                    ),
-                  ),
+                  // Header Section
+                  SizedBox(height: screenHeight * 0.04),
+                  
+                  // Logo Contair
                   Container(
-                    margin: const EdgeInsets.only(top: 10),
-                    width: screenWidth,
+                    height: screenHeight * 0.22,
+                    width: double.infinity,
                     decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(20),
-                      boxShadow: const [
-                        BoxShadow(
-                          blurRadius: 10,
-                          offset: Offset(2, 2),
-                          color: Colors.black26,
-                        ),
-                      ],
-                    ),
-                    child: Row(
-                      children: [
-                        Container(
-                          margin: const EdgeInsets.symmetric(horizontal: 8),
-                          width: screenWidth / 15,
-                          child: Icon(
-                            Icons.person,
-                            color: primary,
-                            size: screenWidth / 15,
-                          ),
-                        ),
-                        Expanded(
-                          child: Padding(
-                            padding: EdgeInsets.only(right: screenWidth / 12),
-                            child: TextFormField(
-                              enableSuggestions: false,
-                              autocorrect: false,
-                              maxLines: 1,
-                              decoration: InputDecoration(
-                                hintText: "Enter your Employee Id",
-                                contentPadding: EdgeInsets.symmetric(
-                                    vertical: screenHeight / 36),
-                                border: InputBorder.none,
-                              ),
-                              controller: empIdController,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Container(
-              margin: EdgeInsets.symmetric(horizontal: screenWidth / 22),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.only(left: 12, top: 20),
-                    child: Text(
-                      "Password",
-                      style: AppTextStyles.bodyText,
-                    ),
-                  ),
-                  Container(
-                    margin: const EdgeInsets.only(top: 10),
-                    width: screenWidth,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(20),
-                      boxShadow: const [
-                        BoxShadow(
-                          blurRadius: 10,
-                          offset: Offset(2, 2),
-                          color: Colors.black26,
-                        ),
-                      ],
-                    ),
-                    child: Row(
-                      children: [
-                        Container(
-                          margin: const EdgeInsets.symmetric(horizontal: 8),
-                          width: screenWidth / 15,
-                          child: Icon(
-                            Icons.security,
-                            color: primary,
-                            size: screenWidth / 15,
-                          ),
-                        ),
-                        Expanded(
-                          child: Padding(
-                            padding: EdgeInsets.only(right: screenWidth / 12),
-                            child: TextFormField(
-                              enableSuggestions: false,
-                              autocorrect: false,
-                              maxLines: 1,
-                              decoration: InputDecoration(
-                                hintText: "Enter your Password",
-                                contentPadding: EdgeInsets.symmetric(
-                                    vertical: screenHeight / 36),
-                                border: InputBorder.none,
-                              ),
-                              controller: passController,
-                              obscureText: true,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  CheckboxListTile(
-                    controlAffinity: ListTileControlAffinity.leading,
-                    contentPadding: const EdgeInsets.all(1),
-                    value: isAccepted,
-                    title: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Text('I agree to HR Hub ', style: TextStyle(fontSize: 12),),
-                        InkWell(
-                          onTap: () {
-                            launchUrl(url);
-                          },
-                          child: const Text(
-                            'Terms and Condition',
-                            style: TextStyle(color: Colors.blue, fontSize: 12, fontWeight: FontWeight.w700),
-                          ),
-                        ),
-                      ],
-                    ),
-                    subtitle: const Text(
-                      'PingHR collects location data to enable check-in and check-out functionality even when the app is closed or not in use.',
-                      style: TextStyle(fontSize: 12),
-                    ),
-                    onChanged: (value) => setState(() => isAccepted = value!),
-                  ),
-                  GestureDetector(
-                    onTap: () {
-                      String id = empIdController.text;
-                      String password = passController.text;
-                      if (id.isEmpty) {
-                        Get.snackbar(
-                          "Employee ID",
-                          "cannot be empty",
-                          colorText: Colors.black54,
-                          backgroundColor: Colors.blue[50],
-                          snackPosition: SnackPosition.BOTTOM,
-                          margin: const EdgeInsets.all(20.0),
-                        );
-                      } else if (password.isEmpty) {
-                        Get.snackbar(
-                          "Password",
-                          "cannot be empty",
-                          colorText: Colors.black54,
-                          backgroundColor: Colors.blue[50],
-                          snackPosition: SnackPosition.BOTTOM,
-                          margin: const EdgeInsets.all(20.0),
-                        );
-                      } else if (isAccepted) {
-                        getLogin(id, password);
-                      } else {
-                        Fluttertoast.showToast(
-                            msg:
-                                'Please accept aur term and condition before login');
-                      }
-                    },
-                    child: Container(
-                      margin: const EdgeInsets.only(top: 15, right: 12,left: 12),
-                      height: 45,
-                      width: screenWidth,
-                      decoration: BoxDecoration(
-                        color: primary,
-                        borderRadius: BorderRadius.circular(30),
-                        boxShadow: const [
-                          BoxShadow(
-                            blurRadius: 10,
-                            offset: Offset(2, 2),
-                            color: Colors.black26,
-                          ),
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          primary.withOpacity(0.1),
+                          primary.withOpacity(0.05),
                         ],
                       ),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: primary.withOpacity(0.1),
+                        width: 1,
+                      ),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(28.0),
                       child: Center(
-                        child: Text(
-                          "LOGIN",
-                          style: TextStyle(
-                            fontFamily: GoogleFonts.poppins().fontFamily,
-                            color: Colors.white,
-                            letterSpacing: 2,
-                            fontSize: screenWidth / 22,
-                          ),
+                        child: Image.asset(
+                          'assets/images/Ping-HR.png',
+                          fit: BoxFit.contain,
                         ),
                       ),
                     ),
                   ),
+                  
+                  SizedBox(height: screenHeight * 0.03),
+                  
+                  // Welcome Text
+                  Text(
+                    "Welcome Back",
+                    style: GoogleFonts.poppins(
+                      fontSize: 24,
+                      fontWeight: FontWeight.w700,
+                      color: const Color(0xFF1E293B),
+                    ),
+                  ),
+                  
+                  SizedBox(height: 4),
+                  
+                  Text(
+                    "Sign in to your account to continue",
+                    style: GoogleFonts.poppins(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w400,
+                      color: secondary,
+                    ),
+                  ),
+                  
+                  SizedBox(height: screenHeight * 0.03),
+                  
+                  // Employee ID Field
+                  _buildInputField(
+                    label: "Employee ID",
+                    hint: "Enter your Employee ID",
+                    icon: Icons.person_outline,
+                    controller: empIdController,
+                    keyboardType: TextInputType.text,
+                  ),
+                  
+                  SizedBox(height: 16),
+                  
+                  // Password Field
+                  _buildPasswordField(),
+                  
+                  SizedBox(height: 12),
+                  
+                  // Terms and Conditions
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(
+                        color: isAccepted ? primary.withOpacity(0.3) : Colors.grey.withOpacity(0.2),
+                        width: 1,
+                      ),
+                    ),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Transform.scale(
+                          scale: 0.8,
+                          child: Checkbox(
+                            value: isAccepted,
+                            activeColor: primary,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            onChanged: (value) => setState(() => isAccepted = value!),
+                          ),
+                        ),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              RichText(
+                                text: TextSpan(
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 12,
+                                    color: const Color(0xFF475569),
+                                  ),
+                                  children: [
+                                    const TextSpan(text: 'I agree to HR Hub '),
+                                    WidgetSpan(
+                                      child: InkWell(
+                                        onTap: () => launchUrl(url),
+                                        child: Text(
+                                          'Terms and Conditions',
+                                          style: GoogleFonts.poppins(
+                                            fontSize: 12,
+                                            color: primary,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              SizedBox(height: 4),
+                              Text(
+                                'PingHR collects location data to enable check-in and check-out functionality even when the app is closed or not in use.',
+                                style: GoogleFonts.poppins(
+                                  fontSize: 11,
+                                  color: secondary,
+                                  height: 1.3,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  
+                  SizedBox(height: 20),
+                  
+                  // Login Button
+                  _buildLoginButton(),
+                  
+                  SizedBox(height: screenHeight * 0.05),
                 ],
               ),
             ),
-          ],
+          ),
         ),
       ),
+    );
+  }
+
+  Widget _buildInputField({
+    required String label,
+    required String hint,
+    required IconData icon,
+    required TextEditingController controller,
+    TextInputType? keyboardType,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: GoogleFonts.poppins(
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+            color: const Color(0xFF374151),
+          ),
+        ),
+        SizedBox(height: 6),
+        Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(
+              color: Colors.grey.withOpacity(0.2),
+              width: 1,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.04),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: TextFormField(
+            controller: controller,
+            keyboardType: keyboardType,
+            style: GoogleFonts.poppins(
+              fontSize: 15,
+              color: const Color(0xFF1E293B),
+            ),
+            decoration: InputDecoration(
+              hintText: hint,
+              hintStyle: GoogleFonts.poppins(
+                fontSize: 15,
+                color: secondary,
+              ),
+              prefixIcon: Icon(
+                icon,
+                color: secondary,
+                size: 18,
+              ),
+              border: InputBorder.none,
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 14,
+                vertical: 12,
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildPasswordField() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          "Password",
+          style: GoogleFonts.poppins(
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+            color: const Color(0xFF374151),
+          ),
+        ),
+        SizedBox(height: 6),
+        Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(
+              color: Colors.grey.withOpacity(0.2),
+              width: 1,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.04),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: TextFormField(
+            controller: passController,
+            obscureText: _obscurePassword,
+            style: GoogleFonts.poppins(
+              fontSize: 15,
+              color: const Color(0xFF1E293B),
+            ),
+            decoration: InputDecoration(
+              hintText: "Enter your Password",
+              hintStyle: GoogleFonts.poppins(
+                fontSize: 15,
+                color: secondary,
+              ),
+              prefixIcon: Icon(
+                Icons.lock_outline,
+                color: secondary,
+                size: 18,
+              ),
+              suffixIcon: IconButton(
+                icon: Icon(
+                  _obscurePassword ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+                  color: secondary,
+                  size: 18,
+                ),
+                onPressed: () {
+                  setState(() {
+                    _obscurePassword = !_obscurePassword;
+                  });
+                },
+              ),
+              border: InputBorder.none,
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 14,
+                vertical: 12,
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildLoginButton() {
+    return Container(
+      width: double.infinity,
+      height: 48,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [primary, primary.withOpacity(0.8)],
+          begin: Alignment.centerLeft,
+          end: Alignment.centerRight,
+        ),
+        borderRadius: BorderRadius.circular(10),
+        boxShadow: [
+          BoxShadow(
+            color: primary.withOpacity(0.3),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(10),
+          onTap: () {
+            String id = empIdController.text.trim();
+            String password = passController.text.trim();
+            
+            if (id.isEmpty) {
+              _showErrorSnackbar("Employee ID cannot be empty");
+            } else if (password.isEmpty) {
+              _showErrorSnackbar("Password cannot be empty");
+            } else if (!isAccepted) {
+              Fluttertoast.showToast(
+                msg: 'Please accept our terms and conditions before login',
+                backgroundColor: Colors.red,
+                textColor: Colors.white,
+              );
+            } else {
+              getLogin(id, password);
+            }
+          },
+          child: Center(
+            child: Text(
+              "Sign In",
+              style: GoogleFonts.poppins(
+                fontSize: 15,
+                fontWeight: FontWeight.w600,
+                color: Colors.white,
+                letterSpacing: 0.5,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showErrorSnackbar(String message) {
+    Get.snackbar(
+      "Error",
+      message,
+      colorText: Colors.white,
+      backgroundColor: Colors.red.shade500,
+      snackPosition: SnackPosition.TOP,
+      margin: const EdgeInsets.all(16),
+      borderRadius: 8,
+      duration: const Duration(seconds: 3),
     );
   }
 }

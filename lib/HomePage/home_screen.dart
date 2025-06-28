@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:async';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:employeeattendance/DrawerPage/about_us.dart';
@@ -37,6 +38,11 @@ class _HomeScreenState extends State<HomeScreen> {
   double screenHeight = 0;
   double screenWidth = 0;
   bool isLoaded = false;
+  final LocationService _locationService = LocationService();
+  Timer? _locationTimer;
+  Future<EventsData>? _newsDataFuture; // Cache for news data
+  Future<BirthdayModel>? _birthdayDataFuture; // Cache for birthday data
+  Future<RewardModel>? _rewardDataFuture; // Cache for reward data
   TextStyle boldText =
       const TextStyle(fontWeight: FontWeight.w500, fontSize: 18);
   TextStyle text = const TextStyle(fontWeight: FontWeight.w500, fontSize: 16);
@@ -44,6 +50,44 @@ class _HomeScreenState extends State<HomeScreen> {
   TextStyle whiteText = const TextStyle(color: Colors.white, fontSize: 16);
   TextStyle whiteSText = const TextStyle(
       color: Colors.white, fontSize: 15, fontWeight: FontWeight.w600);
+  
+  @override
+  void initState() {
+    super.initState();
+    _initializeLocation();
+  }
+
+  @override
+  void dispose() {
+    _locationTimer?.cancel();
+    super.dispose();
+  }
+
+  Future<void> _initializeLocation() async {
+    try {
+      await _locationService.initialize();
+      
+      // Set up a timer to periodically check location status (reduced frequency)
+      _locationTimer = Timer.periodic(const Duration(seconds: 10), (timer) {
+        if (mounted) {
+          setState(() {
+            // This will trigger a rebuild to show updated location status
+          });
+        }
+      });
+    } catch (e) {
+      print('Error initializing location in home screen: $e');
+      // Continue with the screen even if location fails
+    }
+  }
+
+  // Method to refresh news data
+  void _refreshNewsData() {
+    setState(() {
+      _newsDataFuture = _getEventsData();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     screenHeight = MediaQuery.of(context).size.height;
@@ -171,7 +215,45 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
               ),
-              const LocationPage(),
+              SizedBox(
+                width: 120,
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        _getLocationStatusText(),
+                        style: TextStyle(
+                          color: _getLocationStatusColor(),
+                          fontSize: 10,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                    if (_locationService.locationStatus == "Fetching")
+                      SizedBox(
+                        width: 12,
+                        height: 12,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 1,
+                          valueColor: AlwaysStoppedAnimation<Color>(Colors.blue),
+                        ),
+                      ),
+                    if (_locationService.locationStatus == "Permission Required" ||
+                        _locationService.locationStatus == "Error")
+                      GestureDetector(
+                        onTap: () async {
+                          await _locationService.refreshLocation();
+                          setState(() {});
+                        },
+                        child: Icon(
+                          Icons.refresh,
+                          size: 12,
+                          color: Colors.blue,
+                        ),
+                      ),
+                  ],
+                ),
+              ),
             ],
           ),
           GestureDetector(
@@ -230,31 +312,73 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget buildReward() {
-    final url = '${apiUrl}rewards';
-    Future<RewardModel> getRewardDetails() async {
-      var response = await http.post(Uri.parse(url));
-      var data = jsonDecode(response.body.toString());
-      return RewardModel.fromJson(data);
-    }
-
+    // Initialize the future only once
+    _rewardDataFuture ??= _getRewardData();
+    
     return SizedBox(
       height: screenHeight / 4.5,
       child: FutureBuilder<RewardModel>(
-        future: getRewardDetails(),
-        builder: (context, snapshot) => snapshot.hasData
-            ? ListView.builder(
-                scrollDirection: Axis.horizontal,
-                itemCount: snapshot.data!.data!.length,
-                itemBuilder: (context, index) =>
-                    buildRewardList(snapshot, index))
-            : Container(
-                width: screenWidth / 1.06,
-                margin: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(10),
-                ),
+        future: _rewardDataFuture,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  CircularProgressIndicator(),
+                  SizedBox(height: 10),
+                  Text('Loading rewards...', style: TextStyle(fontSize: 12)),
+                ],
               ),
+            );
+          }
+
+          if (snapshot.hasError) {
+            print('Reward FutureBuilder error: ${snapshot.error}');
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.error_outline, color: Colors.red, size: 40),
+                  SizedBox(height: 10),
+                  Text(
+                    'Error loading rewards',
+                    style: TextStyle(fontSize: 14, color: Colors.red),
+                  ),
+                  SizedBox(height: 5),
+                  Text(
+                    '${snapshot.error}',
+                    style: TextStyle(fontSize: 10, color: Colors.grey),
+                    textAlign: TextAlign.center,
+                  ),
+                  SizedBox(height: 10),
+                  ElevatedButton(
+                    onPressed: _refreshRewardData,
+                    child: Text('Retry'),
+                  ),
+                ],
+              ),
+            );
+          }
+
+          if (snapshot.hasData) {
+            return ListView.builder(
+              scrollDirection: Axis.horizontal,
+              itemCount: snapshot.data!.data!.length,
+              itemBuilder: (context, index) =>
+                  buildRewardList(snapshot, index),
+            );
+          }
+
+          return Container(
+            width: screenWidth / 1.06,
+            margin: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(10),
+            ),
+          );
+        },
       ),
     );
   }
@@ -298,22 +422,84 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget buildBirthday() {
-    final url = '${apiUrl}dob';
+  Future<RewardModel> _getRewardData() async {
+    final url = '${apiUrl}rewards';
+    print('Reward API URL: $url');
 
-    Future<BirthdayModel> getBirthdates() async {
+    try {
+      print('Making reward API request to: $url');
       var response = await http.post(Uri.parse(url));
-      var data = jsonDecode(response.body.toString());
-      return BirthdayModel.fromJson(data);
+      print('Reward Response status code: ${response.statusCode}');
+      
+      if (response.statusCode == 200) {
+        var data = jsonDecode(response.body.toString());
+        print('Reward data received: $data');
+        return RewardModel.fromJson(data);
+      } else {
+        print('Reward API request failed with status: ${response.statusCode}');
+        throw Exception('Failed to load reward data: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error in getRewardData: $e');
+      throw Exception('Error loading reward data: $e');
     }
+  }
 
+  // Method to refresh reward data
+  void _refreshRewardData() {
+    setState(() {
+      _rewardDataFuture = _getRewardData();
+    });
+  }
+
+  Widget buildBirthday() {
+    // Initialize the future only once
+    _birthdayDataFuture ??= _getBirthdayData();
+    
     return SizedBox(
       height: screenHeight / 6,
       child: FutureBuilder<BirthdayModel>(
-        future: getBirthdates(),
+        future: _birthdayDataFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator());
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  CircularProgressIndicator(),
+                  SizedBox(height: 10),
+                  Text('Loading birthdays...', style: TextStyle(fontSize: 12)),
+                ],
+              ),
+            );
+          }
+
+          if (snapshot.hasError) {
+            print('Birthday FutureBuilder error: ${snapshot.error}');
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.error_outline, color: Colors.red, size: 40),
+                  SizedBox(height: 10),
+                  Text(
+                    'Error loading birthdays',
+                    style: TextStyle(fontSize: 14, color: Colors.red),
+                  ),
+                  SizedBox(height: 5),
+                  Text(
+                    '${snapshot.error}',
+                    style: TextStyle(fontSize: 10, color: Colors.grey),
+                    textAlign: TextAlign.center,
+                  ),
+                  SizedBox(height: 10),
+                  ElevatedButton(
+                    onPressed: _refreshBirthdayData,
+                    child: Text('Retry'),
+                  ),
+                ],
+              ),
+            );
           }
 
           if (snapshot.hasData) {
@@ -362,12 +548,46 @@ class _HomeScreenState extends State<HomeScreen> {
           }
 
           // Case when there's an error or no data
-          return Center(child: Text("No Data Available"));
+          return Center(
+            child: Text(
+              "No data available",
+              style: TextStyle(fontSize: 14, color: Colors.grey),
+            ),
+          );
         },
       ),
     );
   }
 
+  Future<BirthdayModel> _getBirthdayData() async {
+    final url = '${apiUrl}dob';
+    print('Birthday API URL: $url');
+
+    try {
+      print('Making birthday API request to: $url');
+      var response = await http.post(Uri.parse(url));
+      print('Birthday Response status code: ${response.statusCode}');
+      
+      if (response.statusCode == 200) {
+        var data = jsonDecode(response.body.toString());
+        print('Birthday data received: $data');
+        return BirthdayModel.fromJson(data);
+      } else {
+        print('Birthday API request failed with status: ${response.statusCode}');
+        throw Exception('Failed to load birthday data: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error in getBirthdayData: $e');
+      throw Exception('Error loading birthday data: $e');
+    }
+  }
+
+  // Method to refresh birthday data
+  void _refreshBirthdayData() {
+    setState(() {
+      _birthdayDataFuture = _getBirthdayData();
+    });
+  }
 
   Widget buildBirthListView(AsyncSnapshot<BirthdayModel> snapshot, int index) {
     return Stack(
@@ -741,43 +961,210 @@ class _HomeScreenState extends State<HomeScreen> {
 
 
   Widget buildNews() {
-    final url = '${apiUrl}newsevent';
-    print(url);
-    Future<EventsData> getEventsData() async {
-      var response = await http.post(Uri.parse(url));
-      var data = jsonDecode(response.body.toString());
-      return EventsData.fromJson(data);
-    }
+    // Initialize the future only once
+    _newsDataFuture ??= _getEventsData();
+    
     return SizedBox(
       height: screenHeight / 5,
-      child: FutureBuilder<EventsData>(
-        future: getEventsData(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator());
-          }
+      child: RefreshIndicator(
+        onRefresh: () async {
+          _refreshNewsData();
+          // Wait for the future to complete
+          await _newsDataFuture;
+        },
+        child: FutureBuilder<EventsData>(
+          future: _newsDataFuture,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    CircularProgressIndicator(),
+                    SizedBox(height: 10),
+                    Text('Loading news...', style: TextStyle(fontSize: 12)),
+                  ],
+                ),
+              );
+            }
 
-          if (snapshot.hasData && snapshot.data!.data!.isNotEmpty) {
-            return CarouselSlider.builder(
-              itemCount: snapshot.data!.data!.length,
-              itemBuilder: (context, index, realIndex) {
-                return buildNewsList(snapshot, index);
-              },
-              options: CarouselOptions(
-                height: screenHeight / 5,
-                autoPlay: true,
-                autoPlayInterval: Duration(seconds: 3),
-                enlargeCenterPage: true,
-                enableInfiniteScroll: true,
-                viewportFraction: 1,
+            if (snapshot.hasError) {
+              print('FutureBuilder error: ${snapshot.error}');
+              return Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.error_outline, color: Colors.red, size: 40),
+                    SizedBox(height: 10),
+                    Text(
+                      'Error loading news',
+                      style: TextStyle(fontSize: 14, color: Colors.red),
+                    ),
+                    SizedBox(height: 5),
+                    Text(
+                      '${snapshot.error}',
+                      style: TextStyle(fontSize: 10, color: Colors.grey),
+                      textAlign: TextAlign.center,
+                    ),
+                    SizedBox(height: 10),
+                    ElevatedButton(
+                      onPressed: _refreshNewsData,
+                      child: Text('Retry'),
+                    ),
+                  ],
+                ),
+              );
+            }
+
+            if (snapshot.hasData) {
+              print('News data received: ${snapshot.data?.data?.length ?? 0} items');
+              if (snapshot.data!.data!.isNotEmpty) {
+                return CarouselSlider.builder(
+                  itemCount: snapshot.data!.data!.length,
+                  itemBuilder: (context, index, realIndex) {
+                    return buildNewsList(snapshot, index);
+                  },
+                  options: CarouselOptions(
+                    height: screenHeight / 5,
+                    autoPlay: true,
+                    autoPlayInterval: Duration(seconds: 3),
+                    enlargeCenterPage: true,
+                    enableInfiniteScroll: true,
+                    viewportFraction: 1,
+                  ),
+                );
+              } else {
+                return Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.newspaper, color: Colors.grey, size: 40),
+                      SizedBox(height: 10),
+                      Text(
+                        'No news available',
+                        style: TextStyle(fontSize: 14, color: Colors.grey),
+                      ),
+                    ],
+                  ),
+                );
+              }
+            }
+
+            return Center(
+              child: Text(
+                "No data available",
+                style: TextStyle(fontSize: 14, color: Colors.grey),
               ),
             );
-          } else {
-            return Center(child: Text("No data available"));
-          }
-        },
+          },
+        ),
       ),
     );
+  }
+
+  Future<EventsData> _getEventsData() async {
+    // Try different possible endpoint names
+    final possibleUrls = [
+      '${apiUrl}newsevent',
+      '${apiUrl}news-event',
+      '${apiUrl}news',
+      '${apiUrl}events',
+      '${apiUrl}news-events',
+    ];
+    
+    print('Trying news API URLs: $possibleUrls');
+    
+    for (String url in possibleUrls) {
+      try {
+        print('Trying API request to: $url');
+        
+        // Try POST first
+        var response = await http.post(
+          Uri.parse(url),
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+          },
+        );
+        
+        print('POST Response for $url - status code: ${response.statusCode}');
+        
+        if (response.statusCode == 200) {
+          try {
+            var data = jsonDecode(response.body.toString());
+            print('Success with POST on $url - Parsed data: $data');
+            print('Response body length: ${response.body.length}');
+            print('Response headers: ${response.headers}');
+            
+            // Check if the response has the expected structure
+            if (data is Map<String, dynamic>) {
+              if (data.containsKey('data')) {
+                return EventsData.fromJson(data);
+              } else if (data.containsKey('error') || data.containsKey('message')) {
+                // Try to create EventsData with empty data if error is false
+                if (data['error'] == false) {
+                  return EventsData(error: false, message: data['message'], data: []);
+                }
+              }
+            }
+            
+            // If we get here, the structure is unexpected
+            print('Unexpected response structure: $data');
+            throw Exception('Unexpected response structure');
+          } catch (e) {
+            print('Error parsing JSON from $url: $e');
+            throw Exception('Error parsing response: $e');
+          }
+        } else if (response.statusCode == 405) {
+          // Method not allowed, try GET
+          print('POST not allowed on $url, trying GET...');
+          response = await http.get(
+            Uri.parse(url),
+            headers: {
+              'Content-Type': 'application/json',
+              'Accept': 'application/json',
+            },
+          );
+          
+          print('GET Response for $url - status code: ${response.statusCode}');
+          print('GET Response body: ${response.body}');
+          
+          if (response.statusCode == 200) {
+            try {
+              var data = jsonDecode(response.body.toString());
+              print('Success with GET on $url - Parsed data: $data');
+              
+              // Check if the response has the expected structure
+              if (data is Map<String, dynamic>) {
+                if (data.containsKey('data')) {
+                  return EventsData.fromJson(data);
+                } else if (data.containsKey('error') || data.containsKey('message')) {
+                  // Try to create EventsData with empty data if error is false
+                  if (data['error'] == false) {
+                    return EventsData(error: false, message: data['message'], data: []);
+                  }
+                }
+              }
+              
+              // If we get here, the structure is unexpected
+              print('Unexpected response structure: $data');
+              throw Exception('Unexpected response structure');
+            } catch (e) {
+              print('Error parsing JSON from $url: $e');
+              throw Exception('Error parsing response: $e');
+            }
+          }
+        } else {
+          print('Response body for $url: ${response.body}');
+        }
+      } catch (e) {
+        print('Error trying $url: $e');
+        continue; // Try next URL
+      }
+    }
+    
+    // If we get here, none of the URLs worked
+    throw Exception('Failed to load news data from any endpoint');
   }
 
   Widget buildNewsList(AsyncSnapshot<EventsData> snapshot, int index) {
@@ -896,6 +1283,32 @@ class _HomeScreenState extends State<HomeScreen> {
       case 11: return 'November';
       case 12: return 'December';
       default: return '';
+    }
+  }
+
+  String _getLocationStatusText() {
+    final status = _locationService.locationStatus;
+    if (status == "Fetching") {
+      return "Location: Fetching";
+    } else if (status == "Permission Required") {
+      return "Location: Permission Required";
+    } else if (status == "Error") {
+      return "Location: Error";
+    } else {
+      return "Location: Available";
+    }
+  }
+
+  Color _getLocationStatusColor() {
+    final status = _locationService.locationStatus;
+    if (status == "Fetching") {
+      return Colors.blue;
+    } else if (status == "Permission Required") {
+      return Colors.orange;
+    } else if (status == "Error") {
+      return Colors.red;
+    } else {
+      return Colors.green;
     }
   }
 

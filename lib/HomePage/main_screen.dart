@@ -101,23 +101,19 @@ class _MainScreenState extends State<MainScreen> {
         Positioned(
           bottom: 12, // Align the FAB with the bottom of the navigation bar
           left: (MediaQuery.of(context).size.width - 56) / 2, // Center the button based on its size
-          child: AnimatedScale(
-            scale: _currentIndex == 2 ? 1.1 : 1.0, // More pronounced scale effect when FAB is selected
-            duration: const Duration(milliseconds: 300), // Slightly longer animation duration
-            child: FloatingActionButton(
-              onPressed: () {
-                _onItemTapped(2); // Update the index to show HomeScreen
-              },
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(50), // Fully rounded button
-              ),
-              elevation: 10, // Higher elevation for more depth
-              backgroundColor: Colors.blue.shade900,
-              child: Icon(
-                Icons.fingerprint_outlined, // Material icon for add
-                size: 28, // Larger icon for the FAB
-                color: Colors.white,
-              ),
+          child: FloatingActionButton(
+            onPressed: () {
+              _onItemTapped(2); // Update the index to show HomeScreen
+            },
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(50), // Fully rounded button
+            ),
+            elevation: 10, // Higher elevation for more depth
+            backgroundColor: Colors.blue.shade900,
+            child: Icon(
+              Icons.dashboard_outlined, // Professional dashboard icon
+              size: 28, // Larger icon for the FAB
+              color: Colors.white,
             ),
           ),
         ),
