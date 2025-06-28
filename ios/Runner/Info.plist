@@ -52,5 +52,11 @@
 	<string>This app needs access to location when in the background to record your attendance location.</string>
 	<key>NSLocationAlwaysUsageDescription</key>
 	<string>This app needs access to location when in the background to record your attendance location.</string>
+	<!-- URL Launcher configuration -->
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>http</string>
+		<string>https</string>
+	</array>
 </dict>
 </plist>

@@ -14,6 +14,7 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../controller/globalvariable.dart';
 import 'package:flutter/services.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({Key? key}) : super(key: key);
@@ -128,6 +129,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
             buildTile("Upload", FontAwesomeIcons.upload, () => Get.to(() => const UploadDocuments())),
             buildTile("Downloads", FontAwesomeIcons.download, () => Get.to(() => const Downloads())),
             buildTile("Help", FontAwesomeIcons.questionCircle, () => Get.to(() => const SupportScreen())),
+            buildTile(
+              "Privacy Policy",
+              FontAwesomeIcons.shieldAlt,
+              () async {
+                const String url = 'https://pinghr.in/privacy';
+                try {
+                  await launchUrl(Uri.parse(url));
+                } catch (e) {
+                  Get.snackbar(
+                    'Error',
+                    'Could not open privacy policy',
+                    snackPosition: SnackPosition.BOTTOM,
+                    backgroundColor: Colors.red,
+                    colorText: Colors.white,
+                  );
+                }
+              },
+            ),
             buildTile(
               "Logout",
               FontAwesomeIcons.powerOff,
