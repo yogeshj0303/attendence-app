@@ -26,18 +26,16 @@ class _ShowUploadDocState extends State<ShowUploadDoc> {
       final response = await http.post(Uri.parse(url));
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        if (data['error'] == false) {
-          return ShowDocModel.fromJson(data);
-        } else {
-          Fluttertoast.showToast(msg: 'Error: Unable to fetch documents.');
-        }
+        // Always return the ShowDocModel, let the UI handle empty data
+        return ShowDocModel.fromJson(data);
       } else {
         Fluttertoast.showToast(msg: 'Server error: ${response.statusCode}');
+        throw Exception('Server error: ${response.statusCode}');
       }
     } catch (e) {
       Fluttertoast.showToast(msg: 'An error occurred: $e');
+      throw Exception('Unable to load documents: $e');
     }
-    throw Exception('Unable to load documents');
   }
 
   Future<String> downloadDoc(String url, String fileName) async {
@@ -84,15 +82,41 @@ class _ShowUploadDocState extends State<ShowUploadDoc> {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return const Center(child: CircularProgressIndicator());
                   } else if (snapshot.hasError) {
-                    return Center(child: Text('Error: ${snapshot.error}'));
-                  } else if (!snapshot.hasData || snapshot.data!.data!.isEmpty) {
+                    return Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(Icons.error_outline, size: 64, color: Colors.red),
+                          const SizedBox(height: 16),
+                          Text(
+                            'Error: ${snapshot.error}',
+                            style: const TextStyle(fontSize: 16, color: Colors.red),
+                            textAlign: TextAlign.center,
+                          ),
+                          const SizedBox(height: 16),
+                          ElevatedButton(
+                            onPressed: () {
+                              setState(() {}); // Refresh the FutureBuilder
+                            },
+                            child: const Text('Retry'),
+                          ),
+                        ],
+                      ),
+                    );
+                  } else if (!snapshot.hasData) {
                     return emptyData();
                   } else {
-                    return ListView.builder(
-                      shrinkWrap: true,
-                      itemCount: snapshot.data!.data!.length,
-                      itemBuilder: (context, index) => buildDownloadCard(snapshot, index),
-                    );
+                    // Check if the API returned an error or empty data
+                    final showDocModel = snapshot.data!;
+                    if (showDocModel.error == true || showDocModel.data == null || showDocModel.data!.isEmpty) {
+                      return emptyData();
+                    } else {
+                      return ListView.builder(
+                        shrinkWrap: true,
+                        itemCount: showDocModel.data!.length,
+                        itemBuilder: (context, index) => buildDownloadCard(snapshot, index),
+                      );
+                    }
                   }
                 },
               ),
@@ -146,10 +170,24 @@ class _ShowUploadDocState extends State<ShowUploadDoc> {
   }
 
   Widget emptyData() {
-    return const Center(
-      child: Text(
-        "No documents available for download.",
-        style: TextStyle(fontSize: 16, color: Colors.grey),
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(Icons.folder_open, size: 64, color: Colors.grey),
+          const SizedBox(height: 16),
+          const Text(
+            "No documents available for download.",
+            style: TextStyle(fontSize: 16, color: Colors.grey),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            "Uploaded documents will appear here.",
+            style: TextStyle(fontSize: 14, color: Colors.grey),
+            textAlign: TextAlign.center,
+          ),
+        ],
       ),
     );
   }

@@ -73,14 +73,6 @@ class _SupportScreenState extends State<SupportScreen> {
               const SizedBox(height: 40),
               _buildSupportOption(
                 context,
-                'Contact Live Chat',
-                Icons.chat_bubble,
-                () async {
-                  await _launchURL('https://wa.me/9329143659');
-                },
-              ),
-              _buildSupportOption(
-                context,
                 'Send us an E-mail',
                 Icons.email,
                 () {
@@ -99,6 +91,14 @@ class _SupportScreenState extends State<SupportScreen> {
                     context,
                     MaterialPageRoute(builder: (context) => const FAQsScreen()),
                   );
+                },
+              ),
+              _buildSupportOption(
+                context,
+                'Contact Us',
+                Icons.support_agent,
+                () async {
+                  await _launchURL('tel:+919329143659');
                 },
               ),
             ],
